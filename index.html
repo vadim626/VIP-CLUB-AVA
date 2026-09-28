@@ -2,571 +2,777 @@
 <html lang="ru">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-<title>AVA TRADE — VIP Club</title>
+<title>AVA POCKET — VIP CLUB</title>
 
 <style>
-* {
-    box-sizing: border-box;
-    margin: 0;
-    padding: 0;
+*{
+    box-sizing:border-box;
+    margin:0;
+    padding:0;
 }
 
-:root {
-    --bg: #050507;
-    --card: #0d0d12;
-    --purple: #8b3dff;
-    --purple2: #b76cff;
-    --text: #ffffff;
-    --muted: #8d8d99;
-    --border: rgba(255,255,255,.08);
+html{
+    scroll-behavior:smooth;
 }
 
-body {
-    min-height: 100vh;
-    background:
-        radial-gradient(circle at 50% -10%, rgba(139,61,255,.30), transparent 38%),
-        radial-gradient(circle at 100% 70%, rgba(112,35,255,.12), transparent 35%),
-        #050507;
-    color: white;
-    font-family: -apple-system, BlinkMacSystemFont, "SF Pro Display",
-                 "SF Pro Text", Arial, sans-serif;
-    overflow-x: hidden;
+body{
+    min-height:100vh;
+    background:#050509;
+    color:#fff;
+    font-family:-apple-system,BlinkMacSystemFont,"SF Pro Display",
+    "SF Pro Text",Arial,sans-serif;
+    overflow-x:hidden;
 }
 
-body::before {
-    content: "";
-    position: fixed;
-    width: 420px;
-    height: 420px;
-    left: 50%;
-    top: 30%;
-    transform: translate(-50%, -50%);
-    background: rgba(139,61,255,.08);
-    filter: blur(100px);
-    border-radius: 50%;
-    pointer-events: none;
+/* NEON BACKGROUND */
+
+.bg{
+    position:fixed;
+    inset:0;
+    pointer-events:none;
+    overflow:hidden;
+    z-index:0;
 }
 
-.container {
-    width: min(100% - 30px, 480px);
-    margin: auto;
-    position: relative;
-    z-index: 2;
+.glow{
+    position:absolute;
+    border-radius:50%;
+    filter:blur(90px);
+    opacity:.35;
+}
+
+.glow.one{
+    width:320px;
+    height:320px;
+    background:#681cff;
+    top:-120px;
+    left:-100px;
+}
+
+.glow.two{
+    width:280px;
+    height:280px;
+    background:#0077ff;
+    right:-120px;
+    top:35%;
+}
+
+.glow.three{
+    width:300px;
+    height:300px;
+    background:#b000ff;
+    bottom:-150px;
+    left:30%;
+}
+
+/* CANDLE BACKGROUND */
+
+.chart{
+    position:absolute;
+    inset:0;
+    opacity:.08;
+    background-image:
+        linear-gradient(90deg,
+        transparent 96%,
+        #8d42ff 97%,
+        transparent 98%);
+    background-size:46px 100%;
+}
+
+.container{
+    width:min(100% - 28px,480px);
+    margin:auto;
+    position:relative;
+    z-index:2;
 }
 
 /* HEADER */
 
-header {
-    padding: 42px 0 20px;
-    text-align: center;
+header{
+    padding:28px 0 12px;
 }
 
-.logo {
-    font-size: 64px;
-    font-weight: 900;
-    letter-spacing: -5px;
-    line-height: .9;
-    background: linear-gradient(
-        135deg,
-        #ffffff,
-        #c58aff,
-        #7d2cff
-    );
-    -webkit-background-clip: text;
-    -webkit-text-fill-color: transparent;
+.top{
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
 }
 
-.trade {
-    margin-top: 8px;
-    font-size: 12px;
-    letter-spacing: 8px;
-    color: #bda8d4;
-    padding-left: 8px;
-    font-weight: 700;
+.brand{
+    display:flex;
+    align-items:center;
+    gap:12px;
 }
 
-.status {
-    display: inline-flex;
-    align-items: center;
-    gap: 8px;
-    margin-top: 22px;
-    padding: 8px 13px;
-    border-radius: 30px;
-    border: 1px solid rgba(164,85,255,.25);
-    background: rgba(139,61,255,.08);
-    color: #d2b0ff;
-    font-size: 11px;
-    font-weight: 700;
+.avatar{
+    width:48px;
+    height:48px;
+    border-radius:15px;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    font-size:20px;
+    font-weight:900;
+    background:
+        radial-gradient(circle at 35% 30%,#b56cff,#5714df 55%,#08000e);
+    border:1px solid rgba(190,110,255,.5);
+    box-shadow:
+        0 0 25px rgba(137,44,255,.4),
+        inset 0 0 20px rgba(255,255,255,.08);
 }
 
-.status-dot {
-    width: 7px;
-    height: 7px;
-    border-radius: 50%;
-    background: #9c4cff;
-    box-shadow: 0 0 15px #9c4cff;
+.brand-text b{
+    display:block;
+    font-size:16px;
+    font-style:italic;
 }
 
-/* PAGES */
-
-.page {
-    display: none;
-    animation: pageIn .35s ease;
+.brand-text span{
+    display:block;
+    color:#85818f;
+    font-size:10px;
+    margin-top:3px;
+    letter-spacing:1.5px;
 }
 
-.page.active {
-    display: block;
+.live{
+    display:flex;
+    align-items:center;
+    gap:6px;
+    padding:8px 11px;
+    border-radius:20px;
+    background:rgba(255,255,255,.035);
+    border:1px solid rgba(255,255,255,.07);
+    color:#aaa6b4;
+    font-size:10px;
 }
 
-@keyframes pageIn {
-    from {
-        opacity: 0;
-        transform: translateY(15px);
-    }
-    to {
-        opacity: 1;
-        transform: translateY(0);
-    }
+.live-dot{
+    width:6px;
+    height:6px;
+    border-radius:50%;
+    background:#a450ff;
+    box-shadow:0 0 12px #a450ff;
+    animation:pulse 1.5s infinite;
+}
+
+@keyframes pulse{
+    0%,100%{opacity:.45;transform:scale(.8)}
+    50%{opacity:1;transform:scale(1)}
 }
 
 /* HERO */
 
-.hero {
-    text-align: center;
-    padding: 35px 0 20px;
+.hero{
+    padding:32px 0 20px;
+    text-align:center;
 }
 
-.hero h1 {
-    font-size: 35px;
-    line-height: 1.04;
-    letter-spacing: -1.7px;
-    font-weight: 850;
+.hero h1{
+    font-size:39px;
+    line-height:1;
+    letter-spacing:-2px;
+    font-weight:900;
 }
 
-.gradient {
-    background: linear-gradient(
+.hero h1 span{
+    background:linear-gradient(
         90deg,
-        #fff,
-        #bd79ff,
-        #8b35ff
+        #ffffff,
+        #c779ff,
+        #7330ff
     );
-    -webkit-background-clip: text;
-    -webkit-text-fill-color: transparent;
+    -webkit-background-clip:text;
+    -webkit-text-fill-color:transparent;
 }
 
-.hero p {
-    margin: 16px auto 0;
-    max-width: 390px;
-    color: var(--muted);
-    font-size: 14px;
-    line-height: 1.55;
+.hero p{
+    max-width:370px;
+    margin:15px auto 0;
+    color:#85818e;
+    font-size:13px;
+    line-height:1.55;
 }
 
-/* CARD */
+/* MAIN CARD */
 
-.card {
-    margin-top: 18px;
-    padding: 23px;
-    border-radius: 27px;
+.card{
+    padding:20px;
+    border-radius:27px;
     background:
         linear-gradient(
             145deg,
-            rgba(28,19,40,.94),
-            rgba(10,9,13,.96)
+            rgba(27,18,40,.92),
+            rgba(10,9,14,.96)
         );
-    border: 1px solid var(--border);
+    border:1px solid rgba(255,255,255,.075);
     box-shadow:
-        0 25px 80px rgba(0,0,0,.45),
-        inset 0 1px rgba(255,255,255,.04);
+        0 30px 90px rgba(0,0,0,.5),
+        inset 0 1px rgba(255,255,255,.05);
+    backdrop-filter:blur(20px);
 }
 
-.card-title {
-    font-size: 18px;
-    font-weight: 800;
-    margin-bottom: 17px;
+/* BENEFITS */
+
+.benefits{
+    display:grid;
+    grid-template-columns:1fr 1fr;
+    gap:9px;
 }
 
-.feature {
-    display: flex;
-    align-items: center;
-    gap: 13px;
-    padding: 12px 0;
-    border-bottom: 1px solid rgba(255,255,255,.055);
+.benefit{
+    min-height:95px;
+    padding:14px;
+    border-radius:19px;
+    background:rgba(255,255,255,.025);
+    border:1px solid rgba(255,255,255,.055);
+    transition:.25s;
 }
 
-.feature:last-child {
-    border-bottom: 0;
+.benefit:hover{
+    transform:translateY(-2px);
+    border-color:rgba(148,67,255,.3);
 }
 
-.icon {
-    width: 42px;
-    height: 42px;
-    flex: 0 0 42px;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    border-radius: 14px;
-    background: rgba(139,61,255,.12);
-    border: 1px solid rgba(139,61,255,.15);
-    font-size: 19px;
+.b-icon{
+    width:35px;
+    height:35px;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    border-radius:11px;
+    background:rgba(135,53,255,.13);
+    font-size:17px;
+    margin-bottom:10px;
 }
 
-.feature strong {
-    display: block;
-    font-size: 14px;
+.benefit b{
+    display:block;
+    font-size:12px;
 }
 
-.feature span {
-    display: block;
-    margin-top: 4px;
-    color: #777582;
-    font-size: 11px;
+.benefit span{
+    display:block;
+    margin-top:4px;
+    color:#6e6a76;
+    font-size:9px;
+    line-height:1.3;
 }
 
 /* BUTTON */
 
-.button {
-    width: 100%;
-    border: 0;
-    border-radius: 17px;
-    padding: 17px;
-    margin-top: 20px;
-    background: linear-gradient(
-        135deg,
-        #a04cff,
-        #6d21ff
-    );
-    color: white;
-    font-size: 14px;
-    font-weight: 800;
-    cursor: pointer;
-    box-shadow: 0 12px 35px rgba(119,39,255,.27);
-    transition: .2s;
+.button{
+    width:100%;
+    border:0;
+    border-radius:17px;
+    padding:17px;
+    margin-top:17px;
+    color:white;
+    font-size:14px;
+    font-weight:800;
+    background:
+        linear-gradient(
+            135deg,
+            #a64dff,
+            #7221ff
+        );
+    box-shadow:
+        0 12px 35px rgba(113,32,255,.25);
+    cursor:pointer;
+    transition:.2s;
 }
 
-.button:active {
-    transform: scale(.98);
+.button:active{
+    transform:scale(.97);
 }
 
-.secondary {
-    background: rgba(255,255,255,.04);
-    border: 1px solid rgba(255,255,255,.08);
-    box-shadow: none;
+.button.secondary{
+    background:rgba(255,255,255,.035);
+    border:1px solid rgba(255,255,255,.07);
+    box-shadow:none;
+    color:#aaa5b1;
 }
 
-/* BROKER */
+/* BROKER PAGE */
 
-.broker-card {
-    margin-top: 22px;
-    padding: 25px;
-    border-radius: 27px;
+.page{
+    display:none;
+    animation:pageIn .4s ease;
+}
+
+.page.active{
+    display:block;
+}
+
+@keyframes pageIn{
+    from{
+        opacity:0;
+        transform:translateY(15px);
+    }
+    to{
+        opacity:1;
+        transform:translateY(0);
+    }
+}
+
+.title{
+    text-align:center;
+    padding:32px 0 18px;
+}
+
+.title h2{
+    font-size:29px;
+    letter-spacing:-1px;
+}
+
+.title p{
+    margin-top:10px;
+    color:#85818e;
+    font-size:12px;
+    line-height:1.5;
+}
+
+.broker{
+    text-align:center;
+    padding:24px;
+    border-radius:25px;
     background:
         radial-gradient(
             circle at 50% 0%,
-            rgba(139,61,255,.17),
+            rgba(130,45,255,.2),
             transparent 50%
         ),
-        #0d0c12;
-    border: 1px solid var(--border);
-    text-align: center;
+        #0c0b10;
+    border:1px solid rgba(255,255,255,.07);
 }
 
-.broker-logo {
-    width: 65px;
-    height: 65px;
-    margin: 0 auto 18px;
-    border-radius: 20px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    background: linear-gradient(135deg,#a24fff,#6820ff);
-    font-size: 28px;
-    box-shadow: 0 12px 40px rgba(125,39,255,.25);
+.broker-logo{
+    width:70px;
+    height:70px;
+    margin:auto;
+    border-radius:22px;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    font-size:27px;
+    font-weight:900;
+    background:
+        linear-gradient(
+            135deg,
+            #a64dff,
+            #6320ed
+        );
+    box-shadow:0 15px 45px rgba(117,31,255,.3);
 }
 
-.broker-card h2 {
-    font-size: 22px;
+.broker h3{
+    margin-top:17px;
+    font-size:20px;
 }
 
-.broker-card p {
-    margin-top: 10px;
-    color: var(--muted);
-    font-size: 13px;
-    line-height: 1.5;
+.broker p{
+    margin-top:8px;
+    color:#817c89;
+    font-size:12px;
+    line-height:1.5;
 }
 
-.conditions {
-    margin-top: 18px;
-    text-align: left;
+.info{
+    margin-top:17px;
+    padding:15px;
+    border-radius:17px;
+    background:rgba(255,255,255,.025);
+    text-align:left;
 }
 
-.condition {
-    display: flex;
-    gap: 10px;
-    margin: 10px 0;
-    color: #aaa6b2;
-    font-size: 12px;
-    line-height: 1.45;
+.info-row{
+    display:flex;
+    gap:9px;
+    margin:8px 0;
+    color:#aaa5b0;
+    font-size:11px;
 }
 
-.check {
-    color: #b36aff;
-    font-weight: 800;
+.info-row i{
+    color:#b265ff;
+    font-style:normal;
 }
 
-/* ID PAGE */
+/* ID */
 
-.id-card {
-    margin-top: 25px;
-    padding: 25px;
-    border-radius: 27px;
-    background: #0d0c12;
-    border: 1px solid var(--border);
+.id-card{
+    padding:22px;
+    border-radius:26px;
+    background:#0c0b10;
+    border:1px solid rgba(255,255,255,.075);
 }
 
-.id-card h2 {
-    text-align: center;
-    font-size: 23px;
+.id-head{
+    text-align:center;
 }
 
-.id-card p {
-    text-align: center;
-    color: var(--muted);
-    font-size: 13px;
-    line-height: 1.5;
-    margin-top: 10px;
+.id-head .big-icon{
+    width:58px;
+    height:58px;
+    margin:0 auto 14px;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    border-radius:18px;
+    background:rgba(137,55,255,.12);
+    border:1px solid rgba(137,55,255,.17);
+    font-size:25px;
 }
 
-.input-label {
-    display: block;
-    margin-top: 24px;
-    margin-bottom: 8px;
-    color: #bdb8c5;
-    font-size: 12px;
+.id-head h2{
+    font-size:22px;
 }
 
-input {
-    width: 100%;
-    height: 55px;
-    border-radius: 15px;
-    border: 1px solid rgba(255,255,255,.09);
-    background: #08080b;
-    color: white;
-    outline: none;
-    padding: 0 16px;
-    font-size: 16px;
-    transition: .2s;
+.id-head p{
+    margin-top:8px;
+    color:#7d7985;
+    font-size:12px;
+    line-height:1.5;
 }
 
-input:focus {
-    border-color: rgba(148,69,255,.7);
-    box-shadow: 0 0 0 3px rgba(139,61,255,.09);
+/* INPUT */
+
+.label{
+    display:block;
+    margin-top:22px;
+    margin-bottom:8px;
+    color:#9a95a1;
+    font-size:10px;
+    letter-spacing:1.2px;
+    font-weight:700;
 }
 
-input::placeholder {
-    color: #53515b;
+.input-wrap{
+    position:relative;
+}
+
+.input-wrap span{
+    position:absolute;
+    left:15px;
+    top:50%;
+    transform:translateY(-50%);
+    color:#655f6c;
+    font-size:15px;
+    pointer-events:none;
+}
+
+input{
+    width:100%;
+    height:56px;
+    padding:0 15px 0 42px;
+    border-radius:16px;
+    outline:none;
+    border:1px solid rgba(255,255,255,.08);
+    background:#07070a;
+    color:#fff;
+    font-size:17px;
+    letter-spacing:1px;
+    transition:.25s;
+}
+
+input:focus{
+    border-color:#9145ff;
+    box-shadow:
+        0 0 0 3px rgba(139,55,255,.08),
+        0 0 30px rgba(139,55,255,.08);
+}
+
+input::placeholder{
+    color:#494651;
 }
 
 /* CHECKING */
 
-.checking {
-    display: none;
-    text-align: center;
-    padding: 25px 0 10px;
+.checking{
+    display:none;
+    text-align:center;
+    padding:30px 10px 10px;
 }
 
-.checking.active {
-    display: block;
+.checking.active{
+    display:block;
 }
 
-.loader {
-    width: 70px;
-    height: 70px;
-    margin: 5px auto 20px;
-    border-radius: 50%;
-    border: 3px solid rgba(255,255,255,.08);
-    border-top-color: #a855ff;
-    animation: spin 1s linear infinite;
-    box-shadow: 0 0 35px rgba(139,61,255,.18);
+.loader-wrap{
+    position:relative;
+    width:92px;
+    height:92px;
+    margin:auto;
 }
 
-@keyframes spin {
-    to {
-        transform: rotate(360deg);
-    }
+.loader{
+    width:92px;
+    height:92px;
+    border-radius:50%;
+    border:3px solid rgba(255,255,255,.06);
+    border-top-color:#b15aff;
+    border-right-color:#7025ff;
+    animation:spin .9s linear infinite;
+    box-shadow:0 0 35px rgba(126,36,255,.18);
 }
 
-.checking-title {
-    font-size: 19px;
-    font-weight: 750;
+.loader-inner{
+    position:absolute;
+    inset:22px;
+    border-radius:50%;
+    background:radial-gradient(circle,#a955ff,#4714a5);
+    box-shadow:0 0 30px rgba(149,69,255,.4);
+    animation:innerPulse 1.2s infinite;
 }
 
-.checking-text {
-    margin-top: 8px;
-    color: #777481;
-    font-size: 12px;
+@keyframes spin{
+    to{transform:rotate(360deg)}
+}
+
+@keyframes innerPulse{
+    0%,100%{transform:scale(.8);opacity:.7}
+    50%{transform:scale(1);opacity:1}
+}
+
+.checking h3{
+    margin-top:20px;
+    font-size:18px;
+}
+
+.checking p{
+    margin-top:7px;
+    color:#77737f;
+    font-size:11px;
 }
 
 /* RESULT */
 
-.result {
-    display: none;
-    text-align: center;
+.result{
+    display:none;
+    text-align:center;
 }
 
-.result.active {
-    display: block;
-    animation: resultIn .5s ease;
+.result.active{
+    display:block;
+    animation:result .55s ease;
 }
 
-@keyframes resultIn {
-    0% {
-        opacity: 0;
-        transform: scale(.88);
+@keyframes result{
+    0%{
+        opacity:0;
+        transform:scale(.88);
     }
-    70% {
-        transform: scale(1.03);
+    60%{
+        transform:scale(1.03);
     }
-    100% {
-        opacity: 1;
-        transform: scale(1);
+    100%{
+        opacity:1;
+        transform:scale(1);
     }
 }
 
-.result-icon {
-    width: 76px;
-    height: 76px;
-    margin: 0 auto 19px;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    border-radius: 24px;
-    background: rgba(255,166,0,.08);
-    border: 1px solid rgba(255,166,0,.15);
-    font-size: 32px;
+.result-icon{
+    position:relative;
+    width:78px;
+    height:78px;
+    margin:0 auto 18px;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    border-radius:25px;
+    background:rgba(255,170,0,.07);
+    border:1px solid rgba(255,170,0,.15);
+    font-size:31px;
 }
 
-.result h2 {
-    font-size: 23px;
+.result-icon::after{
+    content:"";
+    position:absolute;
+    inset:-8px;
+    border-radius:31px;
+    border:1px solid rgba(255,170,0,.08);
+    animation:ring 1.5s infinite;
 }
 
-.result p {
-    margin-top: 10px;
-    color: #92909a;
-    font-size: 13px;
-    line-height: 1.55;
+@keyframes ring{
+    0%{
+        transform:scale(.85);
+        opacity:.8;
+    }
+    100%{
+        transform:scale(1.15);
+        opacity:0;
+    }
 }
 
-.id-display {
-    margin-top: 16px;
-    padding: 12px;
-    border-radius: 13px;
-    background: rgba(255,255,255,.035);
-    color: #aaa5b2;
-    font-size: 12px;
+.result h2{
+    font-size:23px;
 }
 
-/* ADMIN */
-
-.admin-box {
-    margin-top: 18px;
-    padding: 18px;
-    border-radius: 18px;
-    background: rgba(139,61,255,.07);
-    border: 1px solid rgba(139,61,255,.13);
-    text-align: left;
+.result>p{
+    margin:9px auto 0;
+    max-width:340px;
+    color:#89848f;
+    font-size:12px;
+    line-height:1.55;
 }
 
-.admin-box strong {
-    font-size: 13px;
+.id-result{
+    margin-top:15px;
+    padding:11px;
+    border-radius:13px;
+    background:rgba(255,255,255,.025);
+    color:#77727f;
+    font-size:11px;
 }
 
-.admin-box p {
-    margin-top: 7px;
-    font-size: 11px;
-    color: #85818c;
+.admin{
+    margin-top:17px;
+    padding:17px;
+    border-radius:18px;
+    background:
+        linear-gradient(
+            135deg,
+            rgba(139,61,255,.09),
+            rgba(255,255,255,.02)
+        );
+    border:1px solid rgba(139,61,255,.13);
+    text-align:left;
+}
+
+.admin-top{
+    display:flex;
+    align-items:center;
+    gap:10px;
+}
+
+.admin-avatar{
+    width:38px;
+    height:38px;
+    border-radius:12px;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    background:linear-gradient(135deg,#9f48ff,#5d1ee7);
+    font-weight:900;
+    font-size:13px;
+}
+
+.admin b{
+    display:block;
+    font-size:12px;
+}
+
+.admin small{
+    display:block;
+    margin-top:3px;
+    color:#77727f;
+    font-size:9px;
+}
+
+.admin-text{
+    margin-top:12px;
+    color:#aaa5b0;
+    font-size:11px;
+    line-height:1.5;
 }
 
 /* FOOTER */
 
-.footer {
-    text-align: center;
-    color: #4f4c56;
-    font-size: 10px;
-    line-height: 1.6;
-    padding: 30px 0 40px;
+.footer{
+    text-align:center;
+    padding:25px 0 35px;
+    color:#44414a;
+    font-size:9px;
+    line-height:1.6;
 }
 
 /* TOAST */
 
-.toast {
-    position: fixed;
-    left: 50%;
-    bottom: 25px;
-    transform: translate(-50%, 20px);
-    background: #19161f;
-    border: 1px solid rgba(255,255,255,.1);
-    color: white;
-    padding: 12px 18px;
-    border-radius: 13px;
-    font-size: 12px;
-    opacity: 0;
-    pointer-events: none;
-    transition: .25s;
-    z-index: 999;
-    white-space: nowrap;
+.toast{
+    position:fixed;
+    left:50%;
+    bottom:25px;
+    transform:translate(-50%,25px);
+    opacity:0;
+    z-index:100;
+    padding:12px 18px;
+    border-radius:14px;
+    background:#1a171f;
+    border:1px solid rgba(255,255,255,.09);
+    font-size:11px;
+    pointer-events:none;
+    transition:.25s;
 }
 
-.toast.show {
-    opacity: 1;
-    transform: translate(-50%, 0);
-}
-
-@media (min-width:700px) {
-
-    .logo {
-        font-size: 72px;
-    }
-
-    .hero h1 {
-        font-size: 42px;
-    }
+.toast.show{
+    opacity:1;
+    transform:translate(-50%,0);
 }
 </style>
 </head>
 
 <body>
 
+<div class="bg">
+    <div class="glow one"></div>
+    <div class="glow two"></div>
+    <div class="glow three"></div>
+    <div class="chart"></div>
+</div>
+
+
 <div class="container">
 
 <header>
-    <div class="logo">AVA</div>
-    <div class="trade">TRADE</div>
 
-    <div class="status">
-        <span class="status-dot"></span>
-        VIP CLUB
+    <div class="top">
+
+        <div class="brand">
+
+            <div class="avatar">
+                AVA
+            </div>
+
+            <div class="brand-text">
+                <b>AVA POCKET</b>
+                <span>TRADING TEAM</span>
+            </div>
+
+        </div>
+
+        <div class="live">
+            <span class="live-dot"></span>
+            VIP CLUB
+        </div>
+
     </div>
+
 </header>
 
 
-<!-- PAGE 1 -->
+<!-- ======================
+     PAGE 1
+====================== -->
 
-<section class="page active" id="page1">
+<section
+    class="page active"
+    id="page1"
+>
 
     <div class="hero">
 
         <h1>
-            Доступ в<br>
-            <span class="gradient">AVA VIP</span>
+            Добро пожаловать<br>
+            в <span>AVA VIP</span>
         </h1>
 
         <p>
-            Закрытый клуб команды AVA TRADE.
-            Получите доступ к торговым материалам,
-            разбору ситуаций и поддержке.
+            Закрытая команда AVA POCKET.
+            Торговые материалы, разборы,
+            статистика и поддержка участников.
         </p>
 
     </div>
@@ -574,45 +780,38 @@ input::placeholder {
 
     <div class="card">
 
-        <div class="card-title">
-            Что вас ждёт
-        </div>
+        <div class="benefits">
 
-        <div class="feature">
-            <div class="icon">📊</div>
-            <div>
-                <strong>Торговые сделки</strong>
-                <span>Рабочие идеи и торговые ситуации</span>
+            <div class="benefit">
+                <div class="b-icon">📊</div>
+                <b>Сделки</b>
+                <span>Торговые идеи команды</span>
             </div>
-        </div>
 
-        <div class="feature">
-            <div class="icon">💬</div>
-            <div>
-                <strong>Разборы</strong>
+            <div class="benefit">
+                <div class="b-icon">💬</div>
+                <b>Разборы</b>
                 <span>Разбор торговых ситуаций</span>
             </div>
+
+            <div class="benefit">
+                <div class="b-icon">📈</div>
+                <b>Статистика</b>
+                <span>Результаты сессий</span>
+            </div>
+
+            <div class="benefit">
+                <div class="b-icon">🤝</div>
+                <b>Поддержка</b>
+                <span>Помощь участникам</span>
+            </div>
+
         </div>
 
-        <div class="feature">
-            <div class="icon">📈</div>
-            <div>
-                <strong>Статистика</strong>
-                <span>Ежедневные результаты команды</span>
-            </div>
-        </div>
-
-        <div class="feature">
-            <div class="icon">🤝</div>
-            <div>
-                <strong>Поддержка</strong>
-                <span>Помощь участникам команды</span>
-            </div>
-        </div>
 
         <button
             class="button"
-            onclick="goToBroker()"
+            onclick="openBroker()"
         >
             Продолжить →
         </button>
@@ -622,72 +821,79 @@ input::placeholder {
 </section>
 
 
-<!-- PAGE 2 -->
+<!-- ======================
+     PAGE 2
+====================== -->
 
-<section class="page" id="page2">
+<section
+    class="page"
+    id="page2"
+>
 
-    <div class="hero">
+    <div class="title">
 
-        <h1>
-            Регистрация<br>
-            <span class="gradient">перед проверкой</span>
-        </h1>
+        <h2>
+            Сначала регистрация
+        </h2>
 
         <p>
-            Чтобы продолжить подключение,
-            зарегистрируйтесь у брокера по
-            нашей партнёрской ссылке.
+            Зарегистрируйтесь у брокера,
+            затем вернитесь сюда и введите
+            свой Trader ID.
         </p>
 
     </div>
 
 
-    <div class="broker-card">
+    <div class="broker">
 
         <div class="broker-logo">
-            ₿
+            PO
         </div>
 
-        <h2>
-            Регистрация
-        </h2>
+        <h3>
+            Pocket Option
+        </h3>
 
         <p>
-            Используйте кнопку ниже для перехода
-            на страницу регистрации.
+            Используйте нашу партнёрскую
+            ссылку для регистрации.
         </p>
 
-        <div class="conditions">
 
-            <div class="condition">
-                <span class="check">✓</span>
-                <span>Регистрация по партнёрской ссылке</span>
+        <div class="info">
+
+            <div class="info-row">
+                <i>✓</i>
+                <span>Регистрация по нашей ссылке</span>
             </div>
 
-            <div class="condition">
-                <span class="check">✓</span>
-                <span>После регистрации сохраните свой Trader ID</span>
+            <div class="info-row">
+                <i>✓</i>
+                <span>После регистрации найдите свой Trader ID</span>
             </div>
 
-            <div class="condition">
-                <span class="check">✓</span>
-                <span>Trader ID понадобится на следующем шаге</span>
+            <div class="info-row">
+                <i>✓</i>
+                <span>Затем вернитесь и введите только цифры</span>
             </div>
 
         </div>
+
 
         <a
             class="button"
-            style="display:block;text-decoration:none;text-align:center"
             href="https://u3.shortink.io/register?utm_campaign=787509&utm_source=affiliate&utm_medium=sr&a=o7nD89164UWb0o&ac=avatrader&code=WELCOME50"
             target="_blank"
+            style="display:block;text-decoration:none;text-align:center"
         >
             Зарегистрироваться →
         </a>
 
+
         <button
             class="button secondary"
-            onclick="goToID()"
+            onclick="openId()"
         >
             Я уже зарегистрирован
         </button>
@@ -697,20 +903,24 @@ input::placeholder {
 </section>
 
 
-<!-- PAGE 3 -->
+<!-- ======================
+     PAGE 3
+====================== -->
 
-<section class="page" id="page3">
+<section
+    class="page"
+    id="page3"
+>
 
-    <div class="hero">
+    <div class="title">
 
-        <h1>
-            Проверка<br>
-            <span class="gradient">Trader ID</span>
-        </h1>
+        <h2>
+            Введите Trader ID
+        </h2>
 
         <p>
-            Введите Trader ID, который указан
-            в вашем аккаунте брокера.
+            Просто напишите цифры своего ID.
+            Ничего лишнего вводить не нужно.
         </p>
 
     </div>
@@ -718,55 +928,82 @@ input::placeholder {
 
     <div class="id-card">
 
-        <div id="inputBlock">
+        <!-- INPUT -->
 
-            <h2>
-                Введите ID
-            </h2>
+        <div id="inputArea">
 
-            <p>
-                Укажите ваш Trader ID для проверки
-                подключения к команде.
-            </p>
+            <div class="id-head">
 
-            <label class="input-label">
+                <div class="big-icon">
+                    #️⃣
+                </div>
+
+                <h2>
+                    Ваш Trader ID
+                </h2>
+
+                <p>
+                    Введите только цифры,
+                    указанные в вашем аккаунте.
+                </p>
+
+            </div>
+
+
+            <label class="label">
                 TRADER ID
             </label>
 
-            <input
-                id="traderId"
-                type="text"
-                inputmode="numeric"
-                placeholder="Например: 12345678"
-                autocomplete="off"
-            >
+
+            <div class="input-wrap">
+
+                <span>#</span>
+
+                <input
+                    id="traderId"
+                    type="tel"
+                    inputmode="numeric"
+                    pattern="[0-9]*"
+                    maxlength="20"
+                    placeholder="Например 12345678"
+                    autocomplete="off"
+                >
+
+            </div>
+
 
             <button
                 class="button"
-                onclick="startCheck()"
+                onclick="checkId()"
             >
-                🔎 Проверить ID
+                Проверить ID →
             </button>
 
         </div>
 
 
-        <!-- LOADING -->
+        <!-- CHECKING -->
 
         <div
             class="checking"
             id="checking"
         >
 
-            <div class="loader"></div>
+            <div class="loader-wrap">
 
-            <div class="checking-title">
-                Проверяем ID...
+                <div class="loader"></div>
+
+                <div class="loader-inner"></div>
+
             </div>
 
-            <div class="checking-text">
-                Подготавливаем результат проверки
-            </div>
+            <h3>
+                Проверяем ID
+            </h3>
+
+            <p>
+                Подготавливаем результат...
+            </p>
 
         </div>
 
@@ -782,43 +1019,57 @@ input::placeholder {
                 ⚠️
             </div>
 
+
             <h2>
-                ID не найден
+                ID не подтверждён
             </h2>
 
+
             <p>
-                Нам не удалось подтвердить данный
-                Trader ID в системе подключения.
+                Автоматическая проверка не смогла
+                подтвердить ваш ID.
             </p>
 
+
             <div
-                class="id-display"
-                id="idDisplay"
+                class="id-result"
+                id="idResult"
             ></div>
 
 
-            <div class="admin-box">
+            <div class="admin">
 
-                <strong>
-                    Нужна помощь с подключением?
-                </strong>
+                <div class="admin-top">
 
-                <p>
-                    Обратитесь к администратору.
-                    Он проверит вашу ситуацию и
-                    подскажет дальнейшие действия.
-                </p>
+                    <div class="admin-avatar">
+                        V
+                    </div>
+
+                    <div>
+                        <b>Вадим — администратор</b>
+                        <small>Личная проверка подключения</small>
+                    </div>
+
+                </div>
+
+
+                <div class="admin-text">
+                    Обратитесь ко мне напрямую.
+                    Я лично проверю данные и,
+                    если всё подходит под условия,
+                    добавлю вас в команду.
+                </div>
 
             </div>
 
 
             <a
                 class="button"
-                style="display:block;text-decoration:none;text-align:center"
                 href="https://t.me/m/6nZG9TLfMjIy"
                 target="_blank"
+                style="display:block;text-decoration:none;text-align:center"
             >
-                💬 Написать администратору
+                💬 Написать Вадиму
             </a>
 
 
@@ -826,7 +1077,7 @@ input::placeholder {
                 class="button secondary"
                 onclick="resetCheck()"
             >
-                Проверить другой ID
+                Ввести другой ID
             </button>
 
         </div>
@@ -838,159 +1089,187 @@ input::placeholder {
 
 <div class="footer">
 
-    AVA TRADE © 2026<br>
-
+    AVA POCKET • VIP CLUB © 2026<br>
     Торговля связана с финансовыми рисками.
-    Результаты прошлых периодов не гарантируют
-    аналогичных результатов в будущем.
 
 </div>
 
 </div>
 
 
-<div class="toast" id="toast">
+<div
+    class="toast"
+    id="toast"
+>
     Введите Trader ID
 </div>
 
 
 <script>
 
-/* =========================
-   NAVIGATION
-========================= */
-
-function showPage(pageNumber) {
-
-    document.querySelectorAll(".page").forEach(function(page) {
-        page.classList.remove("active");
-    });
+function showPage(number){
 
     document
-        .getElementById("page" + pageNumber)
+        .querySelectorAll(".page")
+        .forEach(function(page){
+
+            page.classList.remove("active");
+
+        });
+
+    document
+        .getElementById("page" + number)
         .classList.add("active");
 
     window.scrollTo({
-        top: 0,
-        behavior: "smooth"
+        top:0,
+        behavior:"smooth"
     });
 }
 
 
-function goToBroker() {
+function openBroker(){
+
     showPage(2);
+
 }
 
 
-function goToID() {
+function openId(){
+
     showPage(3);
+
 }
 
 
-/* =========================
-   ID CHECK
-========================= */
+function checkId(){
 
-function startCheck() {
+    const input =
+        document.getElementById("traderId");
 
-    const input = document.getElementById("traderId");
+    const id =
+        input.value.trim();
 
-    const id = input.value.trim();
 
-    if (!id) {
+    if(!id){
 
         showToast("Введите Trader ID");
 
         input.focus();
 
         return;
+
     }
 
 
-    if (id.length < 3) {
+    if(!/^[0-9]+$/.test(id)){
 
-        showToast("Введите корректный Trader ID");
+        showToast("Введите только цифры");
 
         input.focus();
 
         return;
+
     }
 
 
-    /*
-      ВАЖНО:
-
-      Здесь нет реального API-запроса.
-      Результат специально показывается
-      как "ID не найден".
-    */
+    document
+        .getElementById("inputArea")
+        .style.display="none";
 
 
-    document.getElementById("inputBlock").style.display = "none";
+    document
+        .getElementById("checking")
+        .classList.add("active");
 
-    document.getElementById("checking").classList.add("active");
+
+    setTimeout(function(){
+
+        document
+            .getElementById("checking")
+            .classList.remove("active");
 
 
-    setTimeout(function() {
+        document
+            .getElementById("result")
+            .classList.add("active");
 
-        document.getElementById("checking").classList.remove("active");
 
-        document.getElementById("result").classList.add("active");
-
-        document.getElementById("idDisplay").textContent =
+        document
+            .getElementById("idResult")
+            .textContent =
             "Trader ID: " + id;
 
-    }, 2200);
+    },2400);
 
 }
 
 
-/* =========================
-   RESET
-========================= */
+function resetCheck(){
 
-function resetCheck() {
+    document
+        .getElementById("result")
+        .classList.remove("active");
 
-    document.getElementById("result").classList.remove("active");
 
-    document.getElementById("inputBlock").style.display = "block";
+    document
+        .getElementById("inputArea")
+        .style.display="block";
 
-    document.getElementById("traderId").value = "";
+
+    document
+        .getElementById("traderId")
+        .value="";
 
 }
 
 
-/* =========================
-   TOAST
-========================= */
+function showToast(text){
 
-function showToast(message) {
+    const toast =
+        document.getElementById("toast");
 
-    const toast = document.getElementById("toast");
-
-    toast.textContent = message;
+    toast.textContent=text;
 
     toast.classList.add("show");
 
-    setTimeout(function() {
+
+    setTimeout(function(){
+
         toast.classList.remove("show");
-    }, 2200);
+
+    },2000);
+
 }
 
 
-/* =========================
-   ENTER KEY
-========================= */
+document
+    .getElementById("traderId")
+    .addEventListener(
+        "input",
+        function(){
+
+            this.value =
+                this.value.replace(/\D/g,"");
+
+        }
+    );
+
 
 document
     .getElementById("traderId")
-    .addEventListener("keydown", function(event) {
+    .addEventListener(
+        "keydown",
+        function(e){
 
-        if (event.key === "Enter") {
-            startCheck();
+            if(e.key==="Enter"){
+
+                checkId();
+
+            }
+
         }
-
-    });
+    );
 
 </script>
 
