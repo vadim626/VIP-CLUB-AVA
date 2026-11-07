@@ -1,0 +1,39 @@
+# Автоматически загружает сервер проверки ID в Cloudflare
+# при каждом изменении папки server в ветке feature/id-verification.
+# Ключ доступа хранится в GitHub: Settings → Secrets → CLOUDFLARE_API_TOKEN.
+name: Deploy server to Cloudflare
+
+on:
+  push:
+    branches: [feature/id-verification]
+    paths: ["server/**", ".github/workflows/deploy-worker.yml"]
+  workflow_dispatch:
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Проверить, что ключ Cloudflare добавлен
+        id: check
+        env:
+          TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+        run: |
+          if [ -z "$TOKEN" ]; then
+            echo "Ключ CLOUDFLARE_API_TOKEN ещё не добавлен — пропускаю загрузку."
+            echo "skip=1" >> "$GITHUB_OUTPUT"
+          fi
+
+      - uses: actions/checkout@v4
+        if: steps.check.outputs.skip != '1'
+
+      - name: Тесты сервера
+        if: steps.check.outputs.skip != '1'
+        run: node server/test.mjs
+
+      - name: Загрузить в Cloudflare
+        if: steps.check.outputs.skip != '1'
+        uses: cloudflare/wrangler-action@v3
+        with:
+          apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          accountId: 56c76013a2d53616935e201b3e8bafe8
+          workingDirectory: server
