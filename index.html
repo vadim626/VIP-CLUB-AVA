@@ -811,13 +811,13 @@
                 <div class="status-icon">✓</div>
                 <div class="eyebrow" style="color:#5ee07f">Доступ открыт</div>
                 <h2>Добро пожаловать в VIP</h2>
-                <p class="step-text">Ваш ID подтверждён. Вступайте в закрытый канал AVA TRADE.</p>
+                <p class="step-text">Ваш ID подтверждён. Вступайте в закрытый чат AVA TRADE.</p>
 
                 <a class="btn btn-telegram" id="channelButton" href="#" target="_blank" rel="noopener noreferrer">
                     <svg viewBox="0 0 24 24" fill="#fff" aria-hidden="true">
                         <path d="M21.94 4.3 18.8 19.12c-.24 1.05-.86 1.31-1.74.82l-4.8-3.54-2.32 2.23c-.26.26-.47.47-.96.47l.34-4.88 8.88-8.02c.39-.34-.08-.53-.6-.19L6.62 13l-4.72-1.48c-1.03-.32-1.05-1.03.21-1.52L20.56 2.9c.85-.31 1.6.2 1.38 1.4Z"/>
                     </svg>
-                    <span id="channelLabel">Вступить в VIP-канал</span>
+                    <span id="channelLabel">Вступить в VIP-чат</span>
                 </a>
 
                 <div class="notice" id="inviteNote"></div>
@@ -971,7 +971,7 @@
             if (data.status === "approved") {
                 if (data.inviteLink) {
                     channelButton.href = data.inviteLink;
-                    channelLabel.textContent = "Вступить в VIP-канал";
+                    channelLabel.textContent = "Вступить в VIP-чат";
                     inviteNote.textContent = "🔒 Ссылка персональная и одноразовая — по ней может вступить только один человек. Действует 7 дней; если не успели — откройте этот сайт снова, и появится новая.";
                 } else {
                     // Ссылку временно не удалось выдать — честно направляем к администратору

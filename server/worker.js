@@ -212,12 +212,20 @@ async function handleWebhook(request, env) {
     return new Response("ok");
   }
 
-  // Бот увидел канал (его добавили админом или в канале новый пост)
-  const channelChat =
+  // Группа превратилась в супергруппу — у неё меняется ID, обновляем.
+  if (msg && msg.migrate_to_chat_id && String(msg.chat.id) === String(env.CHANNEL_ID)) {
+    await env.AVA_KV.put("cfg:channel", String(msg.migrate_to_chat_id));
+    return new Response("ok");
+  }
+
+  // Бот увидел закрытый канал или группу (его добавили админом / новое сообщение)
+  const CLUB_TYPES = ["channel", "group", "supergroup"];
+  const clubChat =
     (update.channel_post && update.channel_post.chat) ||
-    (update.my_chat_member && update.my_chat_member.chat.type === "channel" && update.my_chat_member.chat);
-  if (channelChat && channelChat.type === "channel") {
-    await offerChannel(env, channelChat);
+    (msg && msg.chat) ||
+    (update.my_chat_member && update.my_chat_member.chat);
+  if (clubChat && CLUB_TYPES.includes(clubChat.type)) {
+    await offerChannel(env, clubChat);
     return new Response("ok");
   }
 
@@ -235,9 +243,9 @@ async function handleWebhook(request, env) {
     await telegram(env, "editMessageText", {
       chat_id: cb.message.chat.id,
       message_id: cb.message.message_id,
-      text: "✅ Канал подключён. Теперь при одобрении заявок бот будет выдавать одноразовые ссылки в этот канал.",
+      text: "✅ VIP-группа подключена. Теперь при одобрении заявок бот будет выдавать одноразовые ссылки в неё.",
     });
-    await answer(env, cb.id, "Канал подключён ✅");
+    await answer(env, cb.id, "Подключено ✅");
     return new Response("ok");
   }
 
@@ -272,7 +280,7 @@ async function handleWebhook(request, env) {
       await answer(
         env,
         cb.id,
-        "Не удалось создать ссылку. Бот должен быть администратором канала с правом приглашать.",
+        "Не удалось создать ссылку. Бот должен быть администратором VIP-группы с правом приглашать пользователей.",
         true,
       );
       return new Response("ok");
@@ -408,8 +416,8 @@ async function handlePrivateMessage(env, msg) {
     await reply(
       "✅ Вы назначены администратором AVA TRADE.\n\n" +
       (env.CHANNEL_ID
-        ? "Канал уже подключён — всё готово. Заявки с сайта будут приходить сюда."
-        : "Последний шаг: опубликуйте любое сообщение в вашем закрытом канале (потом его можно удалить). Я пришлю кнопку, чтобы подтвердить канал."),
+        ? "VIP-группа уже подключена — всё готово. Заявки с сайта будут приходить сюда."
+        : "Последний шаг: напишите любое сообщение в вашей закрытой VIP-группе (потом его можно удалить). Я пришлю кнопку, чтобы её подтвердить."),
     );
     return;
   }
@@ -417,7 +425,7 @@ async function handlePrivateMessage(env, msg) {
   if (String(msg.from.id) === String(env.ADMIN_CHAT_ID)) {
     await reply(
       "AVA TRADE бот работает ✅\n" +
-      "Канал: " + (env.CHANNEL_ID ? "подключён" : "не подключён — опубликуйте сообщение в канале") + "\n" +
+      "VIP-группа: " + (env.CHANNEL_ID ? "подключена" : "не подключена — напишите сообщение в группе") + "\n" +
       "Заявки с сайта приходят сюда с кнопками ✅ / ❌.",
     );
   } else {
@@ -433,9 +441,9 @@ async function offerChannel(env, chat) {
   await telegram(env, "sendMessage", {
     chat_id: env.ADMIN_CHAT_ID,
     text:
-      "Бот видит канал «" + (chat.title || "без названия") + "».\n" +
-      (env.CHANNEL_ID ? "Сейчас подключён другой канал. Заменить на этот?" : "Это ваш закрытый VIP-канал?"),
-    reply_markup: { inline_keyboard: [[{ text: "✅ Да, это мой канал", callback_data: "c:" + chat.id }]] },
+      "Бот видит " + (chat.type === "channel" ? "канал" : "группу") + " «" + (chat.title || "без названия") + "».\n" +
+      (env.CHANNEL_ID ? "Сейчас подключена другая. Заменить на эту?" : "Это ваша закрытая VIP-группа?"),
+    reply_markup: { inline_keyboard: [[{ text: "✅ Да, это моя VIP-группа", callback_data: "c:" + chat.id }]] },
   });
 }
 
@@ -474,7 +482,7 @@ async function handleSetup(url, env) {
     (hook.ok ? "✅ Бот подключён к серверу" : "❌ Не удалось подключить бота: " + (hook.description || "")),
     (env.AVA_KV ? "✅ Хранилище заявок" : "❌ Хранилище AVA_KV не подключено"),
     (env.ADMIN_CHAT_ID ? "✅ Администратор назначен" : "⏳ Администратор: отправьте боту " + bot + " сообщение <b>/admin ВАШ_ПАРОЛЬ</b>"),
-    (env.CHANNEL_ID ? "✅ Канал подключён" : "⏳ Канал: опубликуйте любое сообщение в закрытом канале и нажмите кнопку, которую пришлёт бот"),
+    (env.CHANNEL_ID ? "✅ VIP-группа подключена" : "⏳ VIP-группа: напишите любое сообщение в закрытой группе и нажмите кнопку, которую пришлёт бот"),
     isConfigured(env) ? "<b>🎉 Всё готово! Сайт принимает заявки.</b>" : "Обновите эту страницу после каждого шага.",
   ]);
 }

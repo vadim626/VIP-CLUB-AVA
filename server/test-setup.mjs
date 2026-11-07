@@ -73,7 +73,17 @@ const req = lastTo(777).body.reply_markup.inline_keyboard[0][0].callback_data;
 await hook({ callback_query: { id: "z", from: { id: 777 }, data: req, message: { chat: { id: 777 }, message_id: 9 } } });
 assert.equal(calls.filter((c) => c.method === "createChatInviteLink").pop().body.chat_id, "-1001111");
 
+// 6b. Закрытая ГРУППА тоже подключается (не только канал)
+store.delete("cfg:channel");
+await hook({ message: { chat: { id: -1002222, type: "supergroup", title: "AVA VIP CHAT" }, from: { id: 1 }, text: "тест" } });
+assert.equal(lastTo(777).body.reply_markup.inline_keyboard[0][0].callback_data, "c:-1002222");
+await hook({ callback_query: { id: "g", from: { id: 777 }, data: "c:-1002222", message: { chat: { id: 777 }, message_id: 8 } } });
+assert.equal(store.get("cfg:channel"), "-1002222");
+// группа стала супергруппой — ID обновляется
+await hook({ message: { chat: { id: -1002222, type: "group" }, from: { id: 1 }, migrate_to_chat_id: -1003333 } });
+assert.equal(store.get("cfg:channel"), "-1003333");
+
 // 7. Поддельный запрос без секрета Telegram отклоняется
 assert.equal((await hook({}, "bad")).status, 403);
 
-console.log("Автонастройка: все 7 проверок пройдены ✅");
+console.log("Автонастройка: все 8 проверок пройдены ✅");
