@@ -31,9 +31,19 @@ jobs:
         run: node server/test.mjs
 
       - name: Загрузить в Cloudflare
+        id: deploy
         if: steps.check.outputs.skip != '1'
         uses: cloudflare/wrangler-action@v3
         with:
+          wranglerVersion: "4"
           apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
           accountId: 56c76013a2d53616935e201b3e8bafe8
           workingDirectory: server
+
+      - name: Показать причину ошибки
+        if: failure() && steps.deploy.outcome == 'failure'
+        env:
+          OUT: ${{ steps.deploy.outputs.command-stderr }}
+          OUT2: ${{ steps.deploy.outputs.command-output }}
+        run: |
+          printf '%s\n%s\n' "$OUT" "$OUT2" | grep -v '^\s*$' | tail -n 25 | while IFS= read -r line; do echo "::error::$line"; done
