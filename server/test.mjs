@@ -81,6 +81,11 @@ await press("a:" + reqId, 999);
 assert.equal((await (await status(token)).json()).status, "pending");
 assert.equal((await press("a:" + reqId, 111, "wrong")).status, 403);
 
+// 6b. Уроки академии закрыты, пока ID не одобрен
+const academy = (t) => call("/api/academy", { headers: { Authorization: "Bearer " + t, Origin: ORIGIN } });
+assert.equal((await academy(token)).status, 403);
+assert.equal((await academy("0".repeat(64))).status, 404);
+
 // 7. Если бот не админ канала — доступ НЕ выдаётся, заявка остаётся ожидающей
 failInvite = true;
 await press("a:" + reqId);
@@ -107,6 +112,33 @@ assert.equal(s.status, "approved");
 assert.ok(s.inviteLink);
 assert.equal(calls.filter((c) => c.method === "createChatInviteLink").length, before + 1);
 assert.ok(JSON.parse(store.get("req:" + reqId)).inviteExpiresAt > 1);
+
+// 8c. После одобрения уроки открываются, данные графиков корректны
+const ar = await academy(token);
+assert.equal(ar.status, 200);
+const { lessons } = await ar.json();
+assert.equal(lessons.length, 6);
+for (const l of lessons) {
+  assert.ok(l.title && l.blocks.length && l.quiz.options[l.quiz.answer]);
+  for (const b of l.blocks.filter((b) => b.type === "chart")) {
+    for (const [o, h, lo, c] of b.chart.candles) {
+      assert.ok(h >= Math.max(o, c) && lo <= Math.min(o, c), "свеча с неверными тенями в " + l.id);
+    }
+  }
+}
+// Пример сделки «Выше» в уроке 1 действительно заканчивается выше входа
+const ex = lessons[0].blocks.find((b) => b.type === "chart").chart;
+assert.ok(ex.candles[40][3] > ex.candles[33][3], "пример сделки «Выше» должен быть в плюс");
+// Паттерны выглядят как паттерны
+const pat = lessons[2].blocks.filter((b) => b.type === "chart").map((b) => b.chart);
+const body = ([o, , , c]) => Math.abs(c - o);
+const [hm, hh, hl, hc] = pat[0].candles[pat[0].marks[0].i];
+assert.ok(Math.min(hm, hc) - hl > 2 * body([hm, 0, 0, hc]) && hh - Math.max(hm, hc) < body([hm, 0, 0, hc]) * 2, "молот");
+const eg = pat[1].candles, ei = pat[1].marks[0].i;
+assert.ok(eg[ei][3] > eg[ei][0] && eg[ei - 1][3] < eg[ei - 1][0] && eg[ei][0] <= eg[ei - 1][3] && eg[ei][3] >= eg[ei - 1][0], "поглощение");
+const [so, sh, sl, sc] = pat[2].candles[pat[2].marks[0].i];
+assert.ok(sh - Math.max(so, sc) > 2 * body([so, 0, 0, sc]), "падающая звезда");
+import("node:fs").then((fs) => fs.writeFileSync(process.env.ACADEMY_OUT || "/dev/null", JSON.stringify({ lessons })));
 
 // 9. Повторное нажатие ничего не меняет
 await press("r:" + reqId);
@@ -137,4 +169,4 @@ const bare = await worker.fetch(
   new Request("https://w.dev/api/submit", { method: "POST", body: "{}" }), { AVA_KV: KV });
 assert.equal(bare.status, 503);
 
-console.log("Все 14 проверок пройдены ✅");
+console.log("Все 16 проверок пройдены ✅");

@@ -566,6 +566,115 @@
 
         .hidden { display: none !important; }
 
+        /* =========================================================
+           TRADING ACADEMY
+           ========================================================= */
+        .academy { padding: 22px 16px 18px; animation: rise 0.55s var(--ease) both; }
+
+        .academy-head { display: flex; align-items: center; justify-content: space-between; gap: 12px; padding: 0 4px; }
+        .academy-head h2 { font-size: 24px; font-weight: 750; letter-spacing: -0.02em; }
+        .academy-sub { margin: 4px 4px 16px; color: var(--text-2); font-size: 14px; line-height: 1.45; }
+
+        .ring { position: relative; width: 46px; height: 46px; flex-shrink: 0; }
+        .ring svg { width: 46px; height: 46px; transform: rotate(-90deg); }
+        .ring b { position: absolute; inset: 0; display: grid; place-items: center; font-size: 12px; font-weight: 700; }
+
+        .lessons { list-style: none; border-radius: var(--radius-lg); overflow: hidden; border: 1px solid var(--line); background: rgba(255,255,255,0.025); }
+        .lessons li + li { border-top: 1px solid var(--line); }
+
+        .lesson-row {
+            width: 100%; display: flex; align-items: center; gap: 13px;
+            padding: 13px 14px; min-height: 64px;
+            background: none; border: 0; color: inherit; font: inherit; text-align: left; cursor: pointer;
+            transition: background 0.2s;
+        }
+        .lesson-row:active { background: rgba(255,255,255,0.06); }
+        .lesson-row[disabled] { cursor: default; }
+
+        .lesson-ico {
+            width: 40px; height: 40px; flex-shrink: 0; display: grid; place-items: center;
+            border-radius: 12px; font-size: 19px;
+            background: linear-gradient(145deg, rgba(160, 32, 255, 0.30), rgba(106, 0, 255, 0.12));
+        }
+        .lesson-row.done .lesson-ico { background: linear-gradient(145deg, rgba(48, 209, 88, 0.30), rgba(48, 209, 88, 0.10)); }
+        .lesson-meta { flex: 1; min-width: 0; }
+        .lesson-meta b { display: block; font-size: 15.5px; font-weight: 620; }
+        .lesson-meta span { display: block; margin-top: 2px; color: var(--text-3); font-size: 12.5px; }
+        .lesson-end { color: var(--text-3); font-size: 18px; }
+        .lesson-row.done .lesson-end { color: var(--green); }
+
+        .locked .lesson-row { opacity: 0.55; }
+        .lock-banner {
+            display: flex; align-items: center; gap: 10px; margin-top: 12px; padding: 12px 14px;
+            border-radius: var(--radius-md); background: rgba(160, 32, 255, 0.08); border: 1px solid var(--line-strong);
+            color: var(--text-2); font-size: 13.5px; line-height: 1.4;
+        }
+
+        /* Экран урока */
+        .lesson-top { display: flex; align-items: center; gap: 8px; margin: -4px 0 14px; }
+        .back {
+            display: inline-flex; align-items: center; gap: 4px; padding: 8px 10px 8px 4px;
+            background: none; border: 0; color: #d394ff; font: inherit; font-size: 16px; font-weight: 500; cursor: pointer;
+        }
+        .lesson-count { margin-left: auto; color: var(--text-3); font-size: 13px; }
+        .lesson-title { font-size: 26px; font-weight: 760; letter-spacing: -0.02em; line-height: 1.15; padding: 0 2px; }
+        .lesson-body { margin-top: 14px; }
+        .lesson-body > * + * { margin-top: 14px; }
+        .lesson-body p.txt { color: rgba(240, 232, 255, 0.82); font-size: 15.5px; line-height: 1.55; padding: 0 2px; }
+        .lesson-body h3 { font-size: 17px; font-weight: 680; padding: 0 2px; margin-top: 22px; }
+        .lesson-body ul { list-style: none; display: grid; gap: 9px; padding: 0 2px; }
+        .lesson-body li { position: relative; padding-left: 18px; color: rgba(240, 232, 255, 0.78); font-size: 14.5px; line-height: 1.5; }
+        .lesson-body li::before { content: ""; position: absolute; left: 3px; top: 0.62em; width: 6px; height: 6px; border-radius: 50%; background: var(--violet); }
+        .lesson-body b { color: #fff; font-weight: 640; }
+        .tip { padding: 13px 14px; border-radius: var(--radius-md); background: rgba(255, 214, 10, 0.07); border: 1px solid rgba(255, 214, 10, 0.22); color: rgba(255, 244, 200, 0.88); font-size: 14px; line-height: 1.5; }
+        .tip::before { content: "💡 "; }
+
+        /* Терминал / график */
+        .term { border-radius: 16px; overflow: hidden; background: #131722; border: 1px solid #252b3b; }
+        .term-bar { display: flex; align-items: center; gap: 8px; padding: 9px 12px; border-bottom: 1px solid #222838; font-size: 12.5px; color: #8b93a7; }
+        .term-asset { display: inline-flex; align-items: center; gap: 6px; padding: 4px 9px; border-radius: 8px; background: #1e2433; color: #e8ecf5; font-weight: 600; }
+        .term-asset i { width: 14px; height: 14px; border-radius: 50%; background: linear-gradient(135deg, #2f6fed 50%, #e9b949 50%); }
+        .term-tf { padding: 4px 8px; border-radius: 8px; background: #1e2433; }
+        .term-pay { margin-left: auto; color: #2bb673; font-weight: 700; }
+        .term svg { display: block; width: 100%; height: auto; }
+        .caption { color: var(--text-3); font-size: 13px; line-height: 1.45; padding: 0 2px; margin-top: 8px !important; }
+
+        /* Панель сделки (учебный макет) */
+        .tp { padding: 12px; display: grid; grid-template-columns: 1fr 1fr; gap: 8px; background: #131722; }
+        .tp-box { padding: 9px 10px; border-radius: 10px; background: #1e2433; }
+        .tp-box small { display: block; color: #8b93a7; font-size: 11.5px; }
+        .tp-ctl { display: flex; align-items: center; justify-content: space-between; margin-top: 4px; }
+        .tp-ctl b { font-size: 16px; color: #e8ecf5; font-variant-numeric: tabular-nums; }
+        .tp-ctl button { width: 28px; height: 28px; border-radius: 8px; border: 0; background: #2a3145; color: #e8ecf5; font-size: 17px; cursor: pointer; }
+        .tp-profit { grid-column: 1 / -1; text-align: center; color: #8b93a7; font-size: 12.5px; }
+        .tp-profit b { color: #2bb673; font-size: 18px; display: block; margin-top: 2px; }
+        .tp-up, .tp-down { min-height: 52px; border: 0; border-radius: 12px; color: #fff; font: inherit; font-size: 16px; font-weight: 700; cursor: pointer; }
+        .tp-up { background: #2bb673; }
+        .tp-down { background: #f2495c; }
+        .tp-up:active, .tp-down:active { transform: scale(0.97); }
+
+        /* Калькулятор риска */
+        .calc { padding: 14px; border-radius: 16px; background: #131722; border: 1px solid #252b3b; }
+        .calc label { display: block; color: #8b93a7; font-size: 12.5px; margin-bottom: 6px; }
+        .calc input[type=number] { width: 100%; height: 46px; padding: 0 14px; border-radius: 10px; border: 1px solid #2a3145; background: #1e2433; color: #fff; font: inherit; font-size: 17px; }
+        .calc input[type=range] { width: 100%; accent-color: var(--violet); margin-top: 4px; }
+        .calc-row + .calc-row { margin-top: 12px; }
+        .calc-out { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-top: 14px; }
+        .calc-out div { padding: 10px; border-radius: 10px; background: #1e2433; font-size: 12px; color: #8b93a7; line-height: 1.35; }
+        .calc-out b { display: block; margin-top: 3px; font-size: 18px; color: #fff; font-variant-numeric: tabular-nums; }
+        .calc-out .bad b { color: #ff7a85; }
+
+        /* Тест */
+        .quiz { margin-top: 22px !important; padding: 16px; border-radius: var(--radius-lg); background: rgba(160, 32, 255, 0.07); border: 1px solid var(--line-strong); }
+        .quiz-q { font-size: 16px; font-weight: 640; line-height: 1.4; }
+        .quiz-opts { display: grid; gap: 8px; margin-top: 12px; }
+        .quiz-opt { min-height: 48px; padding: 12px 14px; border-radius: 12px; border: 1px solid var(--line); background: rgba(255,255,255,0.05); color: #fff; font: inherit; font-size: 15px; text-align: left; cursor: pointer; transition: background 0.2s, border-color 0.2s; }
+        .quiz-opt.right { background: rgba(48, 209, 88, 0.16); border-color: rgba(48, 209, 88, 0.6); }
+        .quiz-opt.wrong { background: rgba(255, 69, 58, 0.14); border-color: rgba(255, 69, 58, 0.55); }
+        .quiz-opt[disabled] { cursor: default; }
+        .quiz-explain { margin-top: 12px; color: var(--text-2); font-size: 14px; line-height: 1.5; }
+        .lesson-nav { margin-top: 16px !important; }
+
         @media (max-width: 380px) {
             .features { grid-template-columns: 1fr; }
             .step h2 { font-size: 23px; }
@@ -730,6 +839,37 @@
             </div>
         </section>
 
+        <!-- =====================================================
+             TRADING ACADEMY
+             Уроки загружаются с сервера только после одобрения ID.
+             ===================================================== -->
+        <section class="card academy" id="academySection">
+            <div id="academyList">
+                <div class="academy-head">
+                    <div>
+                        <div class="eyebrow">AVA TRADE</div>
+                        <h2>Trading Academy</h2>
+                    </div>
+                    <div class="ring" aria-label="Прогресс обучения">
+                        <svg viewBox="0 0 46 46"><circle cx="23" cy="23" r="19" fill="none" stroke="rgba(255,255,255,0.1)" stroke-width="4"/><circle id="ringBar" cx="23" cy="23" r="19" fill="none" stroke="#a020ff" stroke-width="4" stroke-linecap="round" stroke-dasharray="119.4" stroke-dashoffset="119.4" style="transition:stroke-dashoffset .6s"/></svg>
+                        <b id="ringText">0/6</b>
+                    </div>
+                </div>
+                <p class="academy-sub" id="academySub">Основы торговли на Pocket Option: платформа, свечи, паттерны, уровни, индикаторы и управление риском.</p>
+                <ul class="lessons" id="lessonList"></ul>
+                <div class="lock-banner" id="lockBanner">🔒 Уроки откроются после подтверждения вашего ID администратором.</div>
+            </div>
+
+            <div id="lessonView" class="hidden">
+                <div class="lesson-top">
+                    <button class="back" id="backButton" type="button">‹ Уроки</button>
+                    <span class="lesson-count" id="lessonCount"></span>
+                </div>
+                <h2 class="lesson-title" id="lessonTitle"></h2>
+                <div class="lesson-body" id="lessonBody"></div>
+            </div>
+        </section>
+
         <footer>
             <span>© AVA TRADE</span>
             <a href="https://t.me/m/6nZG9TLfMjIy" target="_blank" rel="noopener noreferrer">Администратор</a>
@@ -841,6 +981,7 @@
                 }
                 show($("stateApproved"));
                 stopPolling();
+                loadAcademy();
             } else if (data.status === "rejected") {
                 show($("stateRejected"));
                 stopPolling();
@@ -973,6 +1114,427 @@
             reveal(idSection);
             setTimeout(function () { accountId.focus({ preventScroll: true }); }, 450);
         });
+
+        /* =====================================================
+           TRADING ACADEMY
+           ===================================================== */
+        var LESSON_TITLES = [
+            ["platform", "🖥", "Как устроена платформа", 4],
+            ["candles", "🕯", "Японские свечи", 4],
+            ["patterns", "🔍", "Свечные паттерны", 6],
+            ["levels", "📐", "Тренд и уровни", 5],
+            ["indicators", "📈", "Индикаторы", 6],
+            ["risk", "🛡", "Риск-менеджмент", 5]
+        ];
+        var DONE_KEY = "ava_academy_done";
+        var lessons = null;
+        var academyLoading = false;
+
+        var academySection = $("academySection");
+        var lessonList = $("lessonList");
+        var lessonView = $("lessonView");
+        var academyList = $("academyList");
+        var lockBanner = $("lockBanner");
+
+        function getDone() {
+            try { return JSON.parse(localStorage.getItem(DONE_KEY) || "[]"); } catch (e) { return []; }
+        }
+        function markDone(id) {
+            var d = getDone();
+            if (d.indexOf(id) === -1) d.push(id);
+            try { localStorage.setItem(DONE_KEY, JSON.stringify(d)); } catch (e) {}
+        }
+
+        function renderLessonList() {
+            var unlocked = Boolean(lessons);
+            var done = getDone();
+            var items = unlocked
+                ? lessons.map(function (l) { return [l.id, l.emoji, l.title, l.minutes]; })
+                : LESSON_TITLES;
+
+            academySection.classList.toggle("locked", !unlocked);
+            lockBanner.classList.toggle("hidden", unlocked);
+
+            lessonList.innerHTML = items.map(function (it, idx) {
+                var isDone = unlocked && done.indexOf(it[0]) !== -1;
+                return '<li><button class="lesson-row' + (isDone ? " done" : "") + '" data-idx="' + idx + '"' +
+                    (unlocked ? "" : " disabled") + ' type="button">' +
+                    '<span class="lesson-ico">' + it[1] + "</span>" +
+                    '<span class="lesson-meta"><b>' + (idx + 1) + ". " + it[2] + "</b><span>" + it[3] + " мин" +
+                    (isDone ? " · пройден" : "") + "</span></span>" +
+                    '<span class="lesson-end">' + (unlocked ? (isDone ? "✓" : "›") : "🔒") + "</span></button></li>";
+            }).join("");
+
+            var count = unlocked ? lessons.filter(function (l) { return done.indexOf(l.id) !== -1; }).length : 0;
+            $("ringText").textContent = count + "/" + items.length;
+            $("ringBar").style.strokeDashoffset = String(119.4 * (1 - count / items.length));
+        }
+
+        lessonList.addEventListener("click", function (e) {
+            var row = e.target.closest(".lesson-row");
+            if (row && lessons) openLesson(Number(row.getAttribute("data-idx")));
+        });
+
+        $("backButton").addEventListener("click", function () {
+            hide(lessonView);
+            show(academyList);
+            renderLessonList();
+            academySection.scrollIntoView({ behavior: "smooth", block: "start" });
+        });
+
+        function loadAcademy() {
+            var saved = loadSaved();
+            if (lessons || academyLoading || !saved || !saved.token || !API_URL) return;
+            academyLoading = true;
+            api("/api/academy", { headers: { Authorization: "Bearer " + saved.token }, cache: "no-store" })
+                .then(function (r) {
+                    if (r.ok && r.body.lessons) {
+                        lessons = r.body.lessons;
+                        $("academySub").textContent = "Доступ открыт. Проходите уроки по порядку — в конце каждого короткий тест.";
+                        renderLessonList();
+                    }
+                })
+                .catch(function () {})
+                .then(function () { academyLoading = false; });
+        }
+
+        function openLesson(idx) {
+            var l = lessons[idx];
+            hide(academyList);
+            show(lessonView);
+            $("lessonCount").textContent = "Урок " + (idx + 1) + " из " + lessons.length;
+            $("lessonTitle").textContent = l.emoji + " " + l.title;
+
+            var html = l.blocks.map(renderBlock).join("");
+            html += renderQuiz(l, idx);
+            $("lessonBody").innerHTML = html;
+            bindBlocks($("lessonBody"), l, idx);
+            academySection.scrollIntoView({ behavior: "smooth", block: "start" });
+        }
+
+        function renderBlock(b) {
+            if (b.type === "text") return '<p class="txt">' + b.text + "</p>";
+            if (b.type === "tip") return '<div class="tip">' + b.text + "</div>";
+            if (b.type === "points") return "<ul>" + b.items.map(function (t) { return "<li>" + t + "</li>"; }).join("") + "</ul>";
+            if (b.type === "chart") {
+                return (b.title ? "<h3>" + b.title + "</h3>" : "") + drawChart(b.chart) +
+                    (b.caption ? '<p class="caption">' + b.caption + "</p>" : "");
+            }
+            if (b.type === "platform") return drawPlatform();
+            if (b.type === "anatomy") return drawAnatomy();
+            if (b.type === "calc") return drawCalc();
+            return "";
+        }
+
+        function renderQuiz(l) {
+            var q = l.quiz;
+            return '<div class="quiz"><div class="eyebrow">Проверьте себя</div><div class="quiz-q" style="margin-top:6px">' + q.q + "</div>" +
+                '<div class="quiz-opts">' + q.options.map(function (o, i) {
+                    return '<button class="quiz-opt" type="button" data-i="' + i + '">' + o + "</button>";
+                }).join("") + '</div><div class="quiz-explain hidden"></div></div>' +
+                '<div class="lesson-nav hidden"></div>';
+        }
+
+        function bindBlocks(root, l, idx) {
+            // Тест
+            var opts = root.querySelectorAll(".quiz-opt");
+            var explain = root.querySelector(".quiz-explain");
+            var nav = root.querySelector(".lesson-nav");
+            Array.prototype.forEach.call(opts, function (btn) {
+                btn.addEventListener("click", function () {
+                    var i = Number(btn.getAttribute("data-i"));
+                    var right = i === l.quiz.answer;
+                    btn.classList.add(right ? "right" : "wrong");
+                    if (right) {
+                        Array.prototype.forEach.call(opts, function (b) { b.disabled = true; });
+                        markDone(l.id);
+                        explain.innerHTML = "<b>Верно!</b> " + l.quiz.explain;
+                        var next = idx + 1 < lessons.length;
+                        nav.innerHTML = next
+                            ? '<button class="btn btn-primary" type="button" id="nextLesson">Следующий урок <span class="arrow">→</span></button>'
+                            : '<button class="btn btn-primary" type="button" id="nextLesson">Все уроки пройдены 🎉</button>';
+                        show(nav);
+                        $("nextLesson").addEventListener("click", function () {
+                            if (next) openLesson(idx + 1); else $("backButton").click();
+                        });
+                    } else {
+                        btn.disabled = true;
+                        explain.innerHTML = "Не совсем. Попробуйте другой вариант.";
+                    }
+                    show(explain);
+                });
+            });
+
+            // Панель сделки
+            var tp = root.querySelector(".tp");
+            if (tp) {
+                var amount = 10;
+                var upd = function () {
+                    tp.querySelector(".js-amt").textContent = "$" + amount;
+                    tp.querySelector(".js-win").textContent = "$" + (amount * 1.92).toFixed(2);
+                };
+                tp.querySelector(".js-minus").addEventListener("click", function () { amount = Math.max(1, amount - 1); upd(); });
+                tp.querySelector(".js-plus").addEventListener("click", function () { amount = Math.min(1000, amount + 1); upd(); });
+                Array.prototype.forEach.call(tp.querySelectorAll(".tp-up, .tp-down"), function (b) {
+                    b.addEventListener("click", function () { showToast("Это учебный макет — сделки здесь не совершаются."); });
+                });
+            }
+
+            // Калькулятор риска
+            var calc = root.querySelector(".calc");
+            if (calc) {
+                var dep = calc.querySelector(".js-dep");
+                var pct = calc.querySelector(".js-pct");
+                var recalc = function () {
+                    var d = Math.max(0, Number(dep.value) || 0);
+                    var p = Number(pct.value);
+                    calc.querySelector(".js-pctv").textContent = p + "%";
+                    var stake = d * p / 100;
+                    calc.querySelector(".js-stake").textContent = "$" + stake.toFixed(2);
+                    calc.querySelector(".js-after").textContent = "$" + (d * Math.pow(1 - p / 100, 10)).toFixed(0);
+                    var mart = stake * (Math.pow(2, 6) - 1);
+                    calc.querySelector(".js-mart").textContent = "$" + mart.toFixed(0);
+                    calc.querySelector(".js-martp").textContent = d ? Math.round(mart / d * 100) + "% депозита" : "";
+                };
+                dep.addEventListener("input", recalc);
+                pct.addEventListener("input", recalc);
+                recalc();
+            }
+        }
+
+        /* ---------- Учебные блоки ---------- */
+        function drawPlatform() {
+            return '<div class="term"><div class="term-bar"><span class="term-asset"><i></i>EUR/USD OTC</span>' +
+                '<span class="term-tf">M1</span><span class="term-pay">92%</span></div>' +
+                '<div class="tp">' +
+                '<div class="tp-box"><small>Время</small><div class="tp-ctl"><button type="button" tabindex="-1">−</button><b>00:01:00</b><button type="button" tabindex="-1">+</button></div></div>' +
+                '<div class="tp-box"><small>Сумма</small><div class="tp-ctl"><button type="button" class="js-minus">−</button><b class="js-amt">$10</b><button type="button" class="js-plus">+</button></div></div>' +
+                '<div class="tp-profit">Выплата при верном прогнозе<b class="js-win">$19.20</b></div>' +
+                '<button class="tp-up" type="button">▲ Выше</button><button class="tp-down" type="button">▼ Ниже</button>' +
+                '</div></div><p class="caption">Учебный макет панели сделки. Нажмите «+» и «−», чтобы увидеть, как меняется выплата.</p>';
+        }
+
+        function drawAnatomy() {
+            var G = "#2bb673", R = "#f2495c", T = "#c9cfdc", M = "#8b93a7";
+            function lbl(x, y, t, anchor) {
+                return '<text x="' + x + '" y="' + y + '" fill="' + T + '" font-size="13" text-anchor="' + (anchor || "start") + '" dominant-baseline="middle">' + t + "</text>";
+            }
+            function lead(x1, y, x2) { return '<line x1="' + x1 + '" y1="' + y + '" x2="' + x2 + '" y2="' + y + '" stroke="' + M + '" stroke-dasharray="3 3"/>'; }
+            var s = '<svg viewBox="0 0 360 250" role="img" aria-label="Строение зелёной и красной свечи">' +
+                '<rect width="360" height="250" fill="#131722"/>' +
+                // зелёная
+                '<line x1="70" y1="30" x2="70" y2="220" stroke="' + G + '" stroke-width="3"/>' +
+                '<rect x="48" y="70" width="44" height="105" rx="3" fill="' + G + '"/>' +
+                lead(96, 30, 112) + lbl(116, 30, "Максимум") +
+                lead(96, 70, 112) + lbl(116, 70, "Закрытие") +
+                lead(96, 175, 112) + lbl(116, 175, "Открытие") +
+                lead(96, 220, 112) + lbl(116, 220, "Минимум") +
+                // красная
+                '<line x1="290" y1="30" x2="290" y2="220" stroke="' + R + '" stroke-width="3"/>' +
+                '<rect x="268" y="70" width="44" height="105" rx="3" fill="' + R + '"/>' +
+                lead(248, 70, 264) + lbl(244, 70, "Открытие", "end") +
+                lead(248, 175, 264) + lbl(244, 175, "Закрытие", "end") +
+                lead(248, 122, 264) + lbl(244, 122, "Тело", "end") +
+                lead(248, 48, 286) + lbl(244, 48, "Тень", "end") +
+                '<text x="70" y="242" fill="' + G + '" font-size="12" font-weight="700" text-anchor="middle">РОСТ</text>' +
+                '<text x="290" y="242" fill="' + R + '" font-size="12" font-weight="700" text-anchor="middle">ПАДЕНИЕ</text>' +
+                "</svg>";
+            return '<div class="term">' + s + "</div>";
+        }
+
+        function drawCalc() {
+            return '<div class="calc">' +
+                '<div class="calc-row"><label for="calcDep">Ваш депозит, $</label><input id="calcDep" class="js-dep" type="number" inputmode="decimal" min="0" value="200"></div>' +
+                '<div class="calc-row"><label for="calcPct">Риск на сделку: <b class="js-pctv" style="color:#fff">2%</b></label><input id="calcPct" class="js-pct" type="range" min="1" max="10" value="2"></div>' +
+                '<div class="calc-out">' +
+                '<div>Ставка на сделку<b class="js-stake">$4.00</b></div>' +
+                '<div>Останется после 10 убытков подряд<b class="js-after">$163</b></div>' +
+                '<div class="bad" style="grid-column:1/-1">Мартингейл: 6 убытков подряд с удвоением ставки обойдутся в<b class="js-mart">$252</b><span class="js-martp"></span></div>' +
+                "</div></div>";
+        }
+
+        /* ---------- График свечей ---------- */
+        var C = { green: "#2bb673", red: "#f2495c", amber: "#f5b83d", violet: "#b45cff", blue: "#4a8cff" };
+
+        function sma(cl, n) {
+            return cl.map(function (_, i) {
+                if (i < n - 1) return null;
+                var s = 0;
+                for (var j = i - n + 1; j <= i; j++) s += cl[j];
+                return s / n;
+            });
+        }
+
+        function rsiCalc(cl, n) {
+            var out = cl.map(function () { return null; });
+            var g = 0, l = 0;
+            for (var i = 1; i < cl.length; i++) {
+                var d = cl[i] - cl[i - 1];
+                var up = Math.max(d, 0), dn = Math.max(-d, 0);
+                if (i <= n) { g += up / n; l += dn / n; if (i < n) continue; }
+                else { g = (g * (n - 1) + up) / n; l = (l * (n - 1) + dn) / n; }
+                out[i] = l === 0 ? 100 : 100 - 100 / (1 + g / l);
+            }
+            return out;
+        }
+
+        function drawChart(ch) {
+            var cs = ch.candles, n = cs.length;
+            var W = 420, AX = 74, PW = W - AX;
+            var top = 16, MH = 240, bottom = 16;
+            var H = MH + (ch.rsi ? 92 : 0);
+            var step = PW / (n + 2);
+            var cw = Math.max(3, step * 0.64);
+            var X = function (i) { return step * (i + 0.9); };
+            var closes = cs.map(function (c) { return c[3]; });
+
+            var hi = -Infinity, lo = Infinity;
+            cs.forEach(function (c) { hi = Math.max(hi, c[1]); lo = Math.min(lo, c[2]); });
+            var bbU, bbL, bbM;
+            if (ch.bb) {
+                bbM = sma(closes, ch.bb.period);
+                bbU = []; bbL = [];
+                closes.forEach(function (_, i) {
+                    if (bbM[i] === null) { bbU.push(null); bbL.push(null); return; }
+                    var v = 0;
+                    for (var j = i - ch.bb.period + 1; j <= i; j++) v += Math.pow(closes[j] - bbM[i], 2);
+                    var sd = Math.sqrt(v / ch.bb.period);
+                    bbU.push(bbM[i] + ch.bb.mult * sd); bbL.push(bbM[i] - ch.bb.mult * sd);
+                    hi = Math.max(hi, bbU[i]); lo = Math.min(lo, bbL[i]);
+                });
+            }
+            (ch.levels || []).forEach(function (lv) { hi = Math.max(hi, lv.price); lo = Math.min(lo, lv.price); });
+            var pad = (hi - lo) * 0.1;
+            hi += pad; lo -= pad;
+            var Y = function (p) { return top + (hi - p) / (hi - lo) * (MH - top - bottom); };
+            var f = function (v) { return v.toFixed(1); };
+
+            var s = '<svg viewBox="0 0 ' + W + " " + H + '" role="img" aria-label="Учебный график свечей">';
+            s += '<rect width="' + W + '" height="' + H + '" fill="#131722"/>';
+
+            // сетка и шкала цены
+            for (var g = 0; g <= 5; g++) {
+                var gy = top + g * (MH - top - bottom) / 5;
+                var gp = hi - (gy - top) / (MH - top - bottom) * (hi - lo);
+                s += '<line x1="0" y1="' + f(gy) + '" x2="' + PW + '" y2="' + f(gy) + '" stroke="#1f2533"/>';
+                s += '<text x="' + (PW + 6) + '" y="' + f(gy) + '" fill="#6b7387" font-size="13" dominant-baseline="middle">' + gp.toFixed(5) + "</text>";
+            }
+            for (var vi = 4; vi < n; vi += 8) s += '<line x1="' + f(X(vi)) + '" y1="0" x2="' + f(X(vi)) + '" y2="' + MH + '" stroke="#1a2030"/>';
+            s += '<line x1="' + PW + '" y1="0" x2="' + PW + '" y2="' + H + '" stroke="#252b3b"/>';
+
+            // полосы Боллинджера
+            if (ch.bb) {
+                var up = [], dn = [], mid = [];
+                for (var i = 0; i < n; i++) if (bbU[i] !== null) {
+                    up.push(f(X(i)) + "," + f(Y(bbU[i])));
+                    dn.unshift(f(X(i)) + "," + f(Y(bbL[i])));
+                    mid.push(f(X(i)) + "," + f(Y(bbM[i])));
+                }
+                s += '<polygon points="' + up.concat(dn).join(" ") + '" fill="rgba(74,140,255,0.08)"/>';
+                s += '<polyline points="' + up.join(" ") + '" fill="none" stroke="' + C.blue + '" stroke-width="1.5"/>';
+                s += '<polyline points="' + dn.slice().reverse().join(" ") + '" fill="none" stroke="' + C.blue + '" stroke-width="1.5"/>';
+                s += '<polyline points="' + mid.join(" ") + '" fill="none" stroke="' + C.blue + '" stroke-width="1" stroke-dasharray="4 3" opacity=".7"/>';
+            }
+
+            // уровни
+            (ch.levels || []).forEach(function (lv) {
+                var ly = Y(lv.price), col = C[lv.color] || C.violet;
+                s += '<line x1="0" y1="' + f(ly) + '" x2="' + PW + '" y2="' + f(ly) + '" stroke="' + col + '" stroke-width="1.5" stroke-dasharray="6 4"/>';
+                s += '<rect x="6" y="' + f(ly - 21) + '" width="' + (lv.label.length * 8 + 14) + '" height="18" rx="4" fill="' + col + '"/>';
+                s += '<text x="13" y="' + f(ly - 12) + '" fill="#fff" font-size="13" font-weight="700" dominant-baseline="middle">' + lv.label + "</text>";
+            });
+
+            // линии тренда
+            (ch.trendlines || []).forEach(function (t) {
+                var slope = (t.p2 - t.p1) / (t.i2 - t.i1);
+                var col = C[t.color] || C.green;
+                s += '<line x1="' + f(X(t.i1)) + '" y1="' + f(Y(t.p1)) + '" x2="' + f(X(n - 1)) + '" y2="' + f(Y(t.p1 + slope * (n - 1 - t.i1))) + '" stroke="' + col + '" stroke-width="2"/>';
+            });
+
+            // вертикальные отметки
+            (ch.vlines || []).forEach(function (v) {
+                var vx = X(v.i);
+                s += '<line x1="' + f(vx) + '" y1="20" x2="' + f(vx) + '" y2="' + MH + '" stroke="#8b93a7" stroke-dasharray="3 4"/>';
+                s += '<rect x="' + f(vx - v.label.length * 4 - 7) + '" y="1" width="' + (v.label.length * 8 + 14) + '" height="18" rx="4" fill="#2a3145"/>';
+                s += '<text x="' + f(vx) + '" y="10" fill="#e8ecf5" font-size="13" text-anchor="middle" dominant-baseline="middle">' + v.label + "</text>";
+            });
+
+            // свечи
+            cs.forEach(function (c, i) {
+                var col = c[3] >= c[0] ? C.green : C.red;
+                var x = X(i);
+                var yo = Y(c[0]), yc = Y(c[3]);
+                s += '<line x1="' + f(x) + '" y1="' + f(Y(c[1])) + '" x2="' + f(x) + '" y2="' + f(Y(c[2])) + '" stroke="' + col + '" stroke-width="1.3"/>';
+                s += '<rect x="' + f(x - cw / 2) + '" y="' + f(Math.min(yo, yc)) + '" width="' + f(cw) + '" height="' + f(Math.max(1.2, Math.abs(yc - yo))) + '" fill="' + col + '" rx="1"/>';
+            });
+
+            // скользящие средние
+            (ch.ma || []).forEach(function (m) {
+                var v = sma(closes, m.period), pts = [];
+                v.forEach(function (p, i) { if (p !== null) pts.push(f(X(i)) + "," + f(Y(p))); });
+                s += '<polyline points="' + pts.join(" ") + '" fill="none" stroke="' + (C[m.color] || C.amber) + '" stroke-width="2"/>';
+            });
+            if (ch.ma) {
+                ch.ma.forEach(function (m, k) {
+                    s += '<text x="' + (8 + k * 78) + '" y="' + (MH - 6) + '" fill="' + (C[m.color] || C.amber) + '" font-size="13" font-weight="700">MA ' + m.period + "</text>";
+                });
+            }
+
+            // точка входа
+            if (ch.entry) {
+                var ec = cs[ch.entry.i][3], ex = X(ch.entry.i), ey = Y(ec);
+                var ecol = ch.entry.dir === "up" ? C.green : C.red;
+                s += '<line x1="' + f(ex) + '" y1="' + f(ey) + '" x2="' + PW + '" y2="' + f(ey) + '" stroke="' + ecol + '" stroke-width="1.2" stroke-dasharray="5 4"/>';
+                s += '<circle cx="' + f(ex) + '" cy="' + f(ey) + '" r="6" fill="' + ecol + '" stroke="#131722" stroke-width="2"/>';
+                s += '<path d="M' + f(ex - 7) + "," + f(ey + 24) + " L" + f(ex) + "," + f(ey + 14) + " L" + f(ex + 7) + "," + f(ey + 24) + 'Z" fill="' + ecol + '"/>';
+            }
+
+            // подписи паттернов
+            (ch.marks || []).forEach(function (m) {
+                var c = cs[m.i], col = C[m.color] || C.violet, mx = X(m.i);
+                var w = m.label.length * 8.2 + 18;
+                var bx = Math.min(Math.max(mx - w / 2, 4), PW - w - 4);
+                if (m.pos === "above") {
+                    var ay = Y(c[1]) - 8;
+                    s += '<path d="M' + f(mx - 5) + "," + f(ay - 6) + " L" + f(mx) + "," + f(ay) + " L" + f(mx + 5) + "," + f(ay - 6) + 'Z" fill="' + col + '"/>';
+                    s += '<rect x="' + f(bx) + '" y="' + f(ay - 28) + '" width="' + w + '" height="22" rx="6" fill="' + col + '"/>';
+                    s += '<text x="' + f(bx + w / 2) + '" y="' + f(ay - 17) + '" fill="#fff" font-size="13.5" font-weight="700" text-anchor="middle" dominant-baseline="middle">' + m.label + "</text>";
+                } else {
+                    var by = Y(c[2]) + 8;
+                    s += '<path d="M' + f(mx - 5) + "," + f(by + 6) + " L" + f(mx) + "," + f(by) + " L" + f(mx + 5) + "," + f(by + 6) + 'Z" fill="' + col + '"/>';
+                    s += '<rect x="' + f(bx) + '" y="' + f(by + 6) + '" width="' + w + '" height="22" rx="6" fill="' + col + '"/>';
+                    s += '<text x="' + f(bx + w / 2) + '" y="' + f(by + 17) + '" fill="#fff" font-size="13.5" font-weight="700" text-anchor="middle" dominant-baseline="middle">' + m.label + "</text>";
+                }
+            });
+
+            // текущая цена
+            var last = cs[n - 1], lc = last[3], lcol = lc >= last[0] ? C.green : C.red, ly2 = Y(lc);
+            s += '<line x1="0" y1="' + f(ly2) + '" x2="' + PW + '" y2="' + f(ly2) + '" stroke="' + lcol + '" stroke-width="1" stroke-dasharray="2 3" opacity=".8"/>';
+            s += '<rect x="' + (PW + 2) + '" y="' + f(ly2 - 10) + '" width="' + (AX - 4) + '" height="20" rx="3" fill="' + lcol + '"/>';
+            s += '<text x="' + (PW + 6) + '" y="' + f(ly2) + '" fill="#fff" font-size="13" font-weight="700" dominant-baseline="middle">' + lc.toFixed(5) + "</text>";
+
+            // RSI
+            if (ch.rsi) {
+                var r = rsiCalc(closes, ch.rsi.period), rt = MH + 12, rh = 66;
+                var RY = function (v) { return rt + (100 - v) / 100 * rh; };
+                s += '<line x1="0" y1="' + (MH + 2) + '" x2="' + W + '" y2="' + (MH + 2) + '" stroke="#252b3b"/>';
+                s += '<rect x="0" y="' + f(RY(70)) + '" width="' + PW + '" height="' + f(RY(30) - RY(70)) + '" fill="rgba(180,92,255,0.06)"/>';
+                [70, 30].forEach(function (lv) {
+                    s += '<line x1="0" y1="' + f(RY(lv)) + '" x2="' + PW + '" y2="' + f(RY(lv)) + '" stroke="#6b7387" stroke-dasharray="4 4"/>';
+                    s += '<text x="' + (PW + 6) + '" y="' + f(RY(lv)) + '" fill="#6b7387" font-size="13" dominant-baseline="middle">' + lv + "</text>";
+                });
+                var rp = [];
+                r.forEach(function (v, i) { if (v !== null) rp.push(f(X(i)) + "," + f(RY(v))); });
+                s += '<polyline points="' + rp.join(" ") + '" fill="none" stroke="' + C.violet + '" stroke-width="2"/>';
+                var rl = r[r.length - 1];
+                s += '<text x="8" y="' + (rt + 4) + '" fill="' + C.violet + '" font-size="13" font-weight="700" dominant-baseline="hanging">RSI ' + ch.rsi.period + " · " + rl.toFixed(0) + "</text>";
+            }
+
+            s += "</svg>";
+            return '<div class="term"><div class="term-bar"><span class="term-asset"><i></i>EUR/USD</span><span class="term-tf">M1</span><span style="margin-left:auto">Учебный график</span></div>' + s + "</div>";
+        }
+
+        renderLessonList();
 
         /* ---------- Возврат на сайт: показываем сохранённый статус ---------- */
         var saved = loadSaved();
