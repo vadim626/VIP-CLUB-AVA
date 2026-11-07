@@ -69,6 +69,8 @@ r = await worker.fetch(new Request(W + "/api/submit", {
   body: JSON.stringify({ pocketId: "88889999" }),
 }), env);
 assert.equal(r.status, 200);
+const { telegramLink } = await r.json();
+await hook({ message: { chat: { id: 4242, type: "private" }, from: { id: 4242, username: "member" }, text: "/start " + telegramLink.split("start=")[1] } });
 const req = lastTo(777).body.reply_markup.inline_keyboard[0][0].callback_data;
 await hook({ callback_query: { id: "z", from: { id: 777 }, data: req, message: { chat: { id: 777 }, message_id: 9 } } });
 assert.equal(calls.filter((c) => c.method === "createChatInviteLink").pop().body.chat_id, "-1001111");

@@ -474,6 +474,20 @@
             animation: pop 0.6s var(--ease) both;
         }
 
+        .is-telegram .status-icon {
+            background: linear-gradient(180deg, var(--tg-1), var(--tg-2));
+            box-shadow: 0 0 40px rgba(42, 171, 238, 0.35);
+            animation: pop 0.6s var(--ease) both;
+        }
+        .is-telegram .status-icon svg { width: 36px; height: 36px; margin-left: -3px; }
+        .is-deposit .status-icon {
+            background: rgba(255, 214, 10, 0.12);
+            border: 1px solid rgba(255, 214, 10, 0.4);
+            color: var(--amber);
+            font-weight: 800;
+        }
+        .is-telegram .btn-telegram, .is-deposit .btn { margin-top: 2px; }
+
         .is-rejected .status-icon {
             background: rgba(255, 69, 58, 0.10);
             border: 1px solid rgba(255, 69, 58, 0.32);
@@ -811,14 +825,47 @@
         <section class="card step hidden" id="statusSection" aria-live="polite">
             <div class="progress" aria-hidden="true"><i class="on"></i><i class="on"></i><i class="on"></i></div>
 
+            <!-- Подтверждение Telegram -->
+            <div class="status is-telegram hidden" id="stateTelegram">
+                <div class="status-icon"><svg viewBox="0 0 24 24" fill="#fff" aria-hidden="true"><path d="M21.94 4.3 18.8 19.12c-.24 1.05-.86 1.31-1.74.82l-4.8-3.54-2.32 2.23c-.26.26-.47.47-.96.47l.34-4.88 8.88-8.02c.39-.34-.08-.53-.6-.19L6.62 13l-4.72-1.48c-1.03-.32-1.05-1.03.21-1.52L20.56 2.9c.85-.31 1.6.2 1.38 1.4Z"/></svg></div>
+                <div class="eyebrow" style="color:#5cc8ff">Последний шаг</div>
+                <h2>Подтвердите Telegram</h2>
+                <p class="step-text">
+                    Откройте бота AVA TRADE и нажмите <b>«Запустить»</b>. Так администратор
+                    увидит ваш Telegram, а решение придёт вам прямо в чат.
+                </p>
+                <div class="id-chip">ID <b class="js-id"></b></div>
+                <a class="btn btn-telegram" id="tgConfirmButton" href="#" target="_blank" rel="noopener noreferrer">
+                    <svg viewBox="0 0 24 24" fill="#fff" aria-hidden="true"><path d="M21.94 4.3 18.8 19.12c-.24 1.05-.86 1.31-1.74.82l-4.8-3.54-2.32 2.23c-.26.26-.47.47-.96.47l.34-4.88 8.88-8.02c.39-.34-.08-.53-.6-.19L6.62 13l-4.72-1.48c-1.03-.32-1.05-1.03.21-1.52L20.56 2.9c.85-.31 1.6.2 1.38 1.4Z"/></svg>
+                    Подтвердить в Telegram
+                </a>
+                <p class="hint">После «Запустить» вернитесь сюда — статус обновится сам.</p>
+            </div>
+
+            <!-- Счёт не пополнен -->
+            <div class="status is-deposit hidden" id="stateDeposit">
+                <div class="status-icon">$</div>
+                <div class="eyebrow" style="color:#ffd60a">Почти готово</div>
+                <h2>Счёт ещё не пополнен</h2>
+                <p class="step-text">
+                    Регистрация найдена 👍 Чтобы вступить в VIP, пополните счёт Pocket Option
+                    минимум на <b class="js-min">$10</b>, затем нажмите кнопку ниже.
+                </p>
+                <div class="id-chip">ID <b class="js-id"></b></div>
+                <button class="btn btn-primary" id="paidButton" type="button">Я пополнил — проверить снова</button>
+                <a class="btn-link" href="https://t.me/m/6nZG9TLfMjIy" target="_blank" rel="noopener noreferrer">
+                    Написать администратору →
+                </a>
+            </div>
+
             <!-- Ожидание -->
             <div class="status is-pending hidden" id="statePending">
                 <div class="status-icon">⏳</div>
                 <div class="eyebrow">Шаг 3 из 3</div>
                 <h2>ID на проверке</h2>
                 <p class="step-text">
-                    Администратор проверяет вашу регистрацию. Обычно это занимает
-                    несколько минут. Страницу можно закрыть — статус сохранится.
+                    Администратор проверяет регистрацию и пополнение счёта. Обычно это
+                    занимает несколько минут. Ответ придёт сюда и в Telegram — страницу можно закрыть.
                 </p>
                 <div class="id-chip">ID <b class="js-id"></b></div>
                 <div><span class="live">Ожидаем решения</span></div>
@@ -980,7 +1027,7 @@
         function renderStatus(data) {
             hide(idSection);
             show(statusSection);
-            ["statePending", "stateApproved", "stateRejected"].forEach(function (id) { hide($(id)); });
+            ["stateTelegram", "stateDeposit", "statePending", "stateApproved", "stateRejected"].forEach(function (id) { hide($(id)); });
 
             Array.prototype.forEach.call(document.querySelectorAll(".js-id"), function (el) {
                 el.textContent = data.pocketId || "";
@@ -1003,6 +1050,16 @@
             } else if (data.status === "rejected") {
                 show($("stateRejected"));
                 stopPolling();
+            } else if (data.status === "awaiting_tg") {
+                if (data.telegramLink) $("tgConfirmButton").href = data.telegramLink;
+                show($("stateTelegram"));
+                startPolling();
+            } else if (data.status === "needs_deposit") {
+                Array.prototype.forEach.call(document.querySelectorAll(".js-min"), function (el) {
+                    el.textContent = "$" + (data.minDeposit || 10);
+                });
+                show($("stateDeposit"));
+                startPolling();
             } else {
                 show($("statePending"));
                 startPolling();
@@ -1028,6 +1085,8 @@
                         saved.status = r.body.status;
                         saved.pocketId = r.body.pocketId || saved.pocketId;
                         saved.inviteLink = r.body.inviteLink || null;
+                        if (r.body.telegramLink) saved.telegramLink = r.body.telegramLink;
+                        if (r.body.minDeposit) saved.minDeposit = r.body.minDeposit;
                         save(saved);
                         renderStatus(saved);
                     } else if (r.status === 404 || r.status === 401) {
@@ -1113,16 +1172,39 @@
             })
                 .then(function (r) {
                     if (r.ok && r.body.token) {
-                        save({ token: r.body.token, pocketId: id, status: "pending" });
-                        renderStatus({ status: "pending", pocketId: id });
+                        var fresh = { token: r.body.token, pocketId: id, status: r.body.status || "pending", telegramLink: r.body.telegramLink };
+                        save(fresh);
+                        renderStatus(fresh);
                         reveal(statusSection);
-                        showToast("Заявка отправлена администратору ✓");
+                        showToast(fresh.status === "awaiting_tg" ? "Остался один шаг — подтвердите Telegram" : "Заявка отправлена администратору ✓");
                     } else {
                         setError(ERRORS[r.body.error] || ERRORS.telegram_unavailable);
                     }
                 })
                 .catch(function () { setError(ERRORS.network); })
                 .then(function () { setBusy(false); });
+        });
+
+        $("paidButton").addEventListener("click", function () {
+            var saved = loadSaved();
+            if (!saved || !saved.token) return;
+            var btn = $("paidButton");
+            btn.disabled = true;
+            api("/api/recheck", { method: "POST", headers: { Authorization: "Bearer " + saved.token } })
+                .then(function (r) {
+                    if (r.ok) {
+                        saved.status = "pending";
+                        save(saved);
+                        renderStatus(saved);
+                        showToast("Отправили администратору на повторную проверку ✓");
+                    } else if (r.status === 429) {
+                        showToast("Повторная проверка доступна раз в 10 минут. Попробуйте чуть позже.");
+                    } else {
+                        checkStatus();
+                    }
+                })
+                .catch(function () { showToast(ERRORS.network); })
+                .then(function () { btn.disabled = false; });
         });
 
         retryButton.addEventListener("click", function () {

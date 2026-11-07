@@ -35,6 +35,8 @@ const ID_PATTERN = /^\d{5,12}$/;        // Pocket Option ID — только ц�
 import { academyLessons } from "./academy.js";
 
 const INVITE_TTL = 60 * 60 * 24 * 7;    // одноразовая ссылка действует 7 дней
+const RECHECK_COOLDOWN = 10 * 60;       // «Я пополнил» — не чаще раза в 10 минут
+const DEFAULT_MIN_DEPOSIT = 10;         // минимальное пополнение, $ (можно задать MIN_DEPOSIT)
 
 export default {
   async fetch(request, rawEnv) {
@@ -55,6 +57,9 @@ export default {
       }
       if (url.pathname === "/api/status" && request.method === "GET") {
         return await handleStatus(request, env, cors);
+      }
+      if (url.pathname === "/api/recheck" && request.method === "POST") {
+        return await handleRecheck(request, env, cors);
       }
       if (url.pathname === "/api/academy" && request.method === "GET") {
         return await handleAcademy(request, env, cors);
@@ -106,42 +111,38 @@ async function handleSubmit(request, env, cors) {
   }
   await env.AVA_KV.put(ipKey, String(used + 1), { expirationTtl: RATE_LIMIT_WINDOW });
 
-  // Был ли этот ID уже раньше? Сообщим администратору, решать ему.
-  const previousReqId = await env.AVA_KV.get("pid:" + pocketId);
-  let previous = null;
-  if (previousReqId) {
-    previous = await getRequest(env, previousReqId);
+  const bot = await botUsername(env);
+  if (!bot) {
+    return json({ error: "telegram_unavailable" }, 502, cors);
   }
 
-  const reqId = randomHex(8);   // короткий номер заявки (виден админу)
-  const token = randomHex(32);  // секретный ключ посетителя (только у него)
+  const reqId = randomHex(8);    // короткий номер заявки (виден админу)
+  const token = randomHex(32);   // секретный ключ посетителя (только у него)
+  const linkCode = randomHex(12); // код для кнопки «Подтвердить Telegram»
   const record = {
     reqId,
     pocketId,
     tokenHash: await sha256(token),
-    status: "pending",
+    linkCode,
+    status: "awaiting_tg",
     createdAt: new Date().toISOString(),
   };
 
-  const text = adminMessageText(record, previous);
-  const sent = await telegram(env, "sendMessage", {
-    chat_id: env.ADMIN_CHAT_ID,
-    text,
-    parse_mode: "HTML",
-    reply_markup: pendingKeyboard(reqId),
-  });
-
-  if (!sent.ok) {
-    console.error("sendMessage failed", sent.description);
-    return json({ error: "telegram_unavailable" }, 502, cors);
-  }
-
-  record.adminMessageId = sent.result.message_id;
   await saveRequest(env, record);
   await env.AVA_KV.put("tok:" + record.tokenHash, reqId, { expirationTtl: REQUEST_TTL });
-  await env.AVA_KV.put("pid:" + pocketId, reqId, { expirationTtl: REQUEST_TTL });
+  await env.AVA_KV.put("link:" + linkCode, reqId, { expirationTtl: REQUEST_TTL });
 
-  return json({ token, status: "pending", pocketId }, 200, cors);
+  return json({ token, status: record.status, pocketId, telegramLink: tgLink(bot, linkCode) }, 200, cors);
+}
+
+// Посетитель сообщил «Я пополнил» на сайте.
+async function handleRecheck(request, env, cors) {
+  if (!isAllowedOrigin(request, env)) return json({ error: "forbidden_origin" }, 403, cors);
+  const found = await findByToken(request, env);
+  if (found.error) return json({ error: found.error }, found.code, cors);
+  const res = await requestRecheck(env, found.record);
+  if (res.error) return json(res, res.error === "too_soon" ? 429 : 409, cors);
+  return json({ status: "pending" }, 200, cors);
 }
 
 // Находит заявку по секретному ключу посетителя.
@@ -182,7 +183,12 @@ async function handleStatus(request, env, cors) {
     }
   }
 
-  const out = { status: record.status, pocketId: record.pocketId };
+  const out = { status: record.status, pocketId: record.pocketId, minDeposit: minDeposit(env) };
+  if (record.status === "awaiting_tg" && record.linkCode) {
+    const bot = await botUsername(env);
+    if (bot) out.telegramLink = tgLink(bot, record.linkCode);
+  }
+  if (record.tg && record.tg.username) out.telegram = "@" + record.tg.username;
   if (record.status === "approved" && record.inviteLink) {
     out.inviteLink = record.inviteLink;
     out.inviteExpiresAt = record.inviteExpiresAt || null;
@@ -251,13 +257,33 @@ async function handleWebhook(request, env) {
     return new Response("ok");
   }
 
-  // Нажимать кнопки может только администратор.
+  // Кнопка «Я пополнил» — её нажимает сам участник в чате с ботом.
+  const paid = /^p:([0-9a-f]{16})$/.exec(cb.data || "");
+  if (paid) {
+    const rec = await getRequest(env, paid[1]);
+    if (!rec || !rec.tg || String(rec.tg.id) !== String(cb.from.id)) {
+      await answer(env, cb.id, "Заявка не найдена");
+      return new Response("ok");
+    }
+    const res = await requestRecheck(env, rec);
+    if (res.error === "too_soon") {
+      await answer(env, cb.id, "Подождите " + Math.ceil(res.waitSec / 60) + " мин. перед повторной проверкой", true);
+    } else if (res.error) {
+      await answer(env, cb.id, "Заявка уже на проверке или обработана");
+    } else {
+      await answer(env, cb.id, "Отправлено на проверку ✅");
+      await telegram(env, "sendMessage", { chat_id: cb.from.id, text: "🔁 Отправил администратору на повторную проверку. Ответ придёт сюда и на сайт." });
+    }
+    return new Response("ok");
+  }
+
+  // Остальные кнопки может нажимать только администратор.
   if (String(cb.from.id) !== String(env.ADMIN_CHAT_ID)) {
     await answer(env, cb.id, "Нет доступа");
     return new Response("ok");
   }
 
-  const match = /^(a|r):([0-9a-f]{16})$/.exec(cb.data || "");
+  const match = /^(a|r|n):([0-9a-f]{16})$/.exec(cb.data || "");
   if (!match) {
     await answer(env, cb.id, "Неизвестная команда");
     return new Response("ok");
@@ -290,6 +316,8 @@ async function handleWebhook(request, env) {
     record.status = "approved";
     record.inviteLink = link.result.invite_link;
     record.inviteExpiresAt = link.expiresAt;
+  } else if (action === "n") {
+    record.status = "needs_deposit";
   } else {
     record.status = "rejected";
   }
@@ -300,47 +328,187 @@ async function handleWebhook(request, env) {
   await telegram(env, "editMessageText", {
     chat_id: cb.message.chat.id,
     message_id: cb.message.message_id,
-    text: adminMessageText(record, null),
+    text: adminMessageText(record),
     parse_mode: "HTML",
   });
-  await answer(env, cb.id, record.status === "approved" ? "Одобрено ✅" : "Отклонено ❌");
+  await notifyMember(env, record);
+  await answer(env, cb.id, { approved: "Одобрено ✅", rejected: "Отклонено ❌", needs_deposit: "Отмечено: не пополнен 💰" }[record.status]);
   return new Response("ok");
+}
+
+/* ---------- Заявки: Telegram участника, уведомления ---------- */
+
+function minDeposit(env) {
+  const n = Number(env.MIN_DEPOSIT);
+  return n > 0 ? n : DEFAULT_MIN_DEPOSIT;
+}
+
+function tgLink(bot, code) {
+  return "https://t.me/" + bot + "?start=" + code;
+}
+
+// Имя бота (нужно для кнопки «Подтвердить Telegram»), кешируется в KV.
+async function botUsername(env) {
+  const cached = await env.AVA_KV.get("cfg:botname");
+  if (cached) return cached;
+  const me = await telegram(env, "getMe", {});
+  if (!me.ok || !me.result || !me.result.username) return null;
+  await env.AVA_KV.put("cfg:botname", me.result.username, { expirationTtl: 60 * 60 * 24 });
+  return me.result.username;
+}
+
+// Участник нажал «Запустить» в боте по ссылке с сайта.
+async function linkTelegram(env, msg, code) {
+  const reply = (t, extra) => telegram(env, "sendMessage", { chat_id: msg.chat.id, text: t, ...(extra || {}) });
+  const reqId = await env.AVA_KV.get("link:" + code);
+  const record = reqId ? await getRequest(env, reqId) : null;
+  if (!record) {
+    await reply("Ссылка устарела. Введите ID на сайте ещё раз.");
+    return;
+  }
+  if (record.tg && String(record.tg.id) !== String(msg.from.id)) {
+    await reply("Эта заявка уже привязана к другому Telegram-аккаунту.");
+    return;
+  }
+  if (record.status !== "awaiting_tg") {
+    await reply("Ваша заявка с ID " + record.pocketId + ": " + statusRu(record.status) + ". Ответ придёт сюда и на сайт.");
+    return;
+  }
+
+  const from = msg.from || {};
+  record.tg = {
+    id: from.id,
+    username: from.username || null,
+    name: [from.first_name, from.last_name].filter(Boolean).join(" ").slice(0, 64),
+  };
+  record.status = "pending";
+
+  // Подавал ли этот ID или этот Telegram что-то раньше — подскажем администратору.
+  const warnings = [];
+  const prevByPid = await env.AVA_KV.get("pid:" + record.pocketId);
+  if (prevByPid && prevByPid !== record.reqId) {
+    const prev = await getRequest(env, prevByPid);
+    if (prev) warnings.push("Этот ID уже подавали раньше (статус: " + statusRu(prev.status) + ").");
+  }
+  const prevByTg = await env.AVA_KV.get("tgu:" + from.id);
+  if (prevByTg && prevByTg !== record.reqId) {
+    const prev = await getRequest(env, prevByTg);
+    if (prev && prev.pocketId !== record.pocketId) warnings.push("Этот Telegram раньше присылал другой ID: " + prev.pocketId + ".");
+  }
+
+  const ok = await notifyAdmin(env, record, warnings);
+  if (!ok) {
+    await reply("Не удалось отправить заявку. Попробуйте через минуту — нажмите «Запустить» ещё раз.");
+    return;
+  }
+  await saveRequest(env, record);
+  await env.AVA_KV.put("pid:" + record.pocketId, record.reqId, { expirationTtl: REQUEST_TTL });
+  await env.AVA_KV.put("tgu:" + from.id, record.reqId, { expirationTtl: REQUEST_TTL });
+  await reply(
+    "✅ Заявка отправлена!\n\nPocket Option ID: " + record.pocketId +
+    "\nАдминистратор проверит регистрацию и пополнение счёта. Ответ придёт сюда и на сайт.",
+  );
+}
+
+// Отправляет администратору заявку с кнопками. Возвращает true при успехе.
+async function notifyAdmin(env, record, warnings, note) {
+  const sent = await telegram(env, "sendMessage", {
+    chat_id: env.ADMIN_CHAT_ID,
+    text: adminMessageText(record, warnings, note),
+    parse_mode: "HTML",
+    disable_web_page_preview: true,
+    reply_markup: pendingKeyboard(record.reqId),
+  });
+  if (!sent.ok) {
+    console.error("sendMessage to admin failed", sent.description);
+    return false;
+  }
+  record.adminMessageId = sent.result.message_id;
+  return true;
+}
+
+// Сообщает участнику в Telegram о решении администратора.
+async function notifyMember(env, record) {
+  if (!record.tg || !record.tg.id) return;
+  const chat_id = record.tg.id;
+  if (record.status === "approved" && record.inviteLink) {
+    await telegram(env, "sendMessage", {
+      chat_id,
+      text: "🎉 Ваш ID " + record.pocketId + " подтверждён! Добро пожаловать в AVA TRADE VIP.\n\nСсылка персональная и одноразовая — не передавайте её другим.",
+      reply_markup: { inline_keyboard: [[{ text: "Вступить в VIP-чат", url: record.inviteLink }]] },
+    });
+  } else if (record.status === "needs_deposit") {
+    await telegram(env, "sendMessage", {
+      chat_id,
+      text:
+        "💰 Регистрация по ID " + record.pocketId + " найдена, но счёт ещё не пополнен.\n\n" +
+        "Для вступления в VIP пополните счёт минимум на $" + minDeposit(env) + ", затем нажмите кнопку ниже.",
+      reply_markup: { inline_keyboard: [[{ text: "✅ Я пополнил", callback_data: "p:" + record.reqId }]] },
+    });
+  } else if (record.status === "rejected") {
+    await telegram(env, "sendMessage", {
+      chat_id,
+      text: "ID " + record.pocketId + " не подтверждён. Проверьте, что аккаунт создан по ссылке клуба, или напишите администратору.",
+    });
+  }
+}
+
+// «Я пополнил»: возвращает заявку администратору на повторную проверку.
+async function requestRecheck(env, record) {
+  if (record.status !== "needs_deposit") return { error: "not_waiting_deposit" };
+  const since = nowSec() - (record.recheckAt || 0);
+  if (since < RECHECK_COOLDOWN) return { error: "too_soon", waitSec: RECHECK_COOLDOWN - since };
+  record.status = "pending";
+  record.recheckAt = nowSec();
+  const ok = await notifyAdmin(env, record, [], "🔁 Повторная проверка: участник сообщил, что пополнил счёт.");
+  if (!ok) return { error: "telegram_unavailable" };
+  await saveRequest(env, record);
+  return { ok: true };
+}
+
+function escapeHtml(t) {
+  return String(t).replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
 }
 
 /* ============================================================
    ВСПОМОГАТЕЛЬНОЕ
    ============================================================ */
 
-function adminMessageText(record, previous) {
-  const lines = [
-    "<b>Новая заявка AVA TRADE</b>",
-    "",
-    "Pocket Option ID: <code>" + record.pocketId + "</code>",
-    "Заявка: #" + record.reqId,
-    "Время: " + record.createdAt.replace("T", " ").slice(0, 16) + " UTC",
-  ];
-  if (previous) {
-    lines.push("", "⚠️ Этот ID уже подавали раньше (статус: " + statusRu(previous.status) + ").");
+function adminMessageText(record, warnings, note) {
+  const decided = record.status !== "pending";
+  const lines = [decided ? "<b>Заявка AVA TRADE</b>" : "<b>Новая заявка AVA TRADE</b>", ""];
+  if (note && !decided) lines.push(note, "");
+  lines.push("Pocket Option ID: <code>" + record.pocketId + "</code>");
+  if (record.tg) {
+    const who = record.tg.username ? "@" + escapeHtml(record.tg.username) : "без username";
+    lines.push("Telegram: <a href=\"tg://user?id=" + record.tg.id + "\">" + who + "</a>" + (record.tg.name ? " · " + escapeHtml(record.tg.name) : ""));
   }
-  if (record.status === "pending") {
-    lines.push("", "Проверьте ID в PocketPartners Bot и нажмите кнопку.");
-  } else {
-    lines[0] = "<b>Заявка AVA TRADE</b>";
-    lines.push("", "Решение: " + statusRu(record.status));
-  }
+  lines.push("Заявка: #" + record.reqId, "Время: " + record.createdAt.replace("T", " ").slice(0, 16) + " UTC");
+  (warnings || []).forEach((w) => lines.push("", "⚠️ " + w));
+  if (decided) lines.push("", "Решение: " + statusRu(record.status));
+  else lines.push("", "Проверьте ID и пополнение в PocketPartners Bot и нажмите кнопку.");
   return lines.join("\n");
 }
 
 function statusRu(status) {
-  return { pending: "ожидает ⏳", approved: "одобрено ✅", rejected: "отклонено ❌" }[status] || status;
+  return {
+    awaiting_tg: "ждёт подтверждения Telegram",
+    pending: "на проверке ⏳",
+    needs_deposit: "не пополнен 💰",
+    approved: "одобрено ✅",
+    rejected: "отклонено ❌",
+  }[status] || status;
 }
 
 function pendingKeyboard(reqId) {
   return {
-    inline_keyboard: [[
-      { text: "✅ Одобрить", callback_data: "a:" + reqId },
-      { text: "❌ Отклонить", callback_data: "r:" + reqId },
-    ]],
+    inline_keyboard: [
+      [
+        { text: "✅ Одобрить", callback_data: "a:" + reqId },
+        { text: "❌ Отклонить", callback_data: "r:" + reqId },
+      ],
+      [{ text: "💰 Не пополнен", callback_data: "n:" + reqId }],
+    ],
   };
 }
 
@@ -408,6 +576,12 @@ async function handlePrivateMessage(env, msg) {
   const text = msg.text.trim();
   const reply = (t) => telegram(env, "sendMessage", { chat_id: msg.chat.id, text: t });
 
+  const startLink = /^\/start\s+([0-9a-f]{24})$/.exec(text);
+  if (startLink) {
+    await linkTelegram(env, msg, startLink[1]);
+    return;
+  }
+
   const adminCmd = /^\/admin\s+(\S+)$/.exec(text);
   if (adminCmd) {
     if (!env.WEBHOOK_SECRET || !timingSafeEqual(adminCmd[1], env.WEBHOOK_SECRET)) {
@@ -428,7 +602,7 @@ async function handlePrivateMessage(env, msg) {
     await reply(
       "AVA TRADE бот работает ✅\n" +
       "VIP-группа: " + (env.CHANNEL_ID ? "подключена" : "не подключена — напишите сообщение в группе") + "\n" +
-      "Заявки с сайта приходят сюда с кнопками ✅ / ❌.",
+      "Заявки с сайта приходят сюда с кнопками ✅ / ❌ / 💰.",
     );
   } else {
     await reply("Это служебный бот AVA TRADE. Вступить в клуб можно через сайт.");

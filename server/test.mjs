@@ -25,6 +25,7 @@ globalThis.fetch = async (url, init) => {
   const body = JSON.parse(init.body);
   calls.push({ method, body });
   if (method === "sendMessage") return Response.json({ ok: true, result: { message_id: 42 } });
+  if (method === "getMe") return Response.json({ ok: true, result: { username: "ava_trade_check_bot" } });
   if (method === "createChatInviteLink") {
     if (failInvite) return Response.json({ ok: false, description: "not enough rights" });
     return Response.json({ ok: true, result: { invite_link: "https://t.me/+ONE_TIME" } });
@@ -49,28 +50,51 @@ const press = (data, fromId = 111, secret = "s3cret") =>
       callback_query: { id: "cb", from: { id: fromId }, data, message: { chat: { id: 111 }, message_id: 42 } },
     }),
   });
-const lastAdminReqId = () => {
-  const m = calls.filter((c) => c.method === "sendMessage").pop();
-  return m.body.reply_markup.inline_keyboard[0][0].callback_data.slice(2);
-};
+const toChat = (id) => calls.filter((c) => c.method === "sendMessage" && String(c.body.chat_id) === String(id));
+const lastAdminReqId = () => toChat(111).pop().body.reply_markup.inline_keyboard[0][0].callback_data.slice(2);
+// Участник нажимает «Запустить» в боте по ссылке с сайта
+const startTg = (link, tgId, username) =>
+  call("/telegram/webhook", {
+    method: "POST",
+    headers: { "X-Telegram-Bot-Api-Secret-Token": "s3cret" },
+    body: JSON.stringify({ message: { chat: { id: tgId, type: "private" }, from: { id: tgId, username, first_name: "Иван" },
+      text: "/start " + link.split("start=")[1] } }),
+  });
+const recheck = (token) => call("/api/recheck", { method: "POST", headers: { Authorization: "Bearer " + token, Origin: ORIGIN } });
 
 // 1. Неверный ID отклоняется
 assert.equal((await submit("abc")).status, 400);
 // 2. Чужой сайт не может отправлять заявки
 assert.equal((await submit("12345678", "9.9.9.9", "https://evil.com")).status, 403);
 
-// 3. Нормальная заявка → админу приходит сообщение с кнопками
+// 3. Заявка с сайта ждёт подтверждения Telegram — админ пока ничего не получает
 let r = await submit("12345678");
 assert.equal(r.status, 200);
-const { token } = await r.json();
+const sub = await r.json();
+const { token } = sub;
 assert.match(token, /^[0-9a-f]{64}$/);
+assert.equal(sub.status, "awaiting_tg");
+assert.match(sub.telegramLink, /^https:\/\/t\.me\/ava_trade_check_bot\?start=[0-9a-f]{24}$/);
+assert.equal(toChat(111).length, 0, "админу ещё ничего не пришло");
+assert.equal((await (await status(token)).json()).telegramLink, sub.telegramLink);
+
+// 3b. Участник нажал «Запустить» в боте → админу заявка с ID и @username, участнику — подтверждение
+await startTg(sub.telegramLink, 5001, "ivan_trader");
+const adm = toChat(111).pop().body;
+assert.ok(adm.text.includes("12345678") && adm.text.includes("@ivan_trader") && adm.text.includes("tg://user?id=5001"));
+const kb = adm.reply_markup.inline_keyboard.flat().map((b) => b.callback_data[0]);
+assert.deepEqual(kb, ["a", "r", "n"], "три кнопки: одобрить, отклонить, не пополнен");
+assert.ok(toChat(5001).pop().body.text.includes("Заявка отправлена"));
 const reqId = lastAdminReqId();
-assert.ok(calls.at(-1).body.text.includes("12345678"));
+// чужой Telegram не может перехватить чужую заявку
+await startTg(sub.telegramLink, 6006, "thief");
+assert.ok(toChat(6006).pop().body.text.includes("другому Telegram"));
 
 // 4. Пока админ не нажал — статус «ожидает», ссылки нет
 let s = await (await status(token)).json();
 assert.equal(s.status, "pending");
 assert.equal(s.inviteLink, undefined);
+assert.equal(s.telegram, "@ivan_trader");
 
 // 5. Неверный ключ — нет доступа к чужой заявке
 assert.equal((await status("0".repeat(64))).status, 404);
@@ -99,6 +123,8 @@ assert.equal(s.status, "approved");
 assert.equal(s.inviteLink, "https://t.me/+ONE_TIME");
 const inviteCall = calls.filter((c) => c.method === "createChatInviteLink").pop();
 assert.equal(inviteCall.body.member_limit, 1);
+// ссылка пришла участнику и в Telegram
+assert.equal(toChat(5001).pop().body.reply_markup.inline_keyboard[0][0].url, "https://t.me/+ONE_TIME");
 
 assert.ok(inviteCall.body.expire_date > Date.now() / 1000 + 6 * 86400);
 
@@ -147,12 +173,49 @@ assert.equal((await (await status(token)).json()).status, "approved");
 
 // 10. Отклонение работает; повторный ID помечается для админа
 r = await submit("12345678", "2.2.2.2");
-const t2 = (await r.json()).token;
-assert.ok(calls.filter((c) => c.method === "sendMessage").pop().body.text.includes("уже подавали"));
+const sub2 = await r.json();
+const t2 = sub2.token;
+await startTg(sub2.telegramLink, 7007, "other_guy");
+assert.ok(toChat(111).pop().body.text.includes("уже подавали"));
 await press("r:" + lastAdminReqId());
 s = await (await status(t2)).json();
 assert.equal(s.status, "rejected");
 assert.equal(s.inviteLink, undefined);
+assert.ok(toChat(7007).pop().body.text.includes("не подтверждён"));
+
+// 10b. «Не пополнен» → участнику сообщение с кнопкой «Я пополнил», на сайте — статус needs_deposit
+r = await submit("44440000", "5.5.5.5");
+const sub3 = await r.json();
+await startTg(sub3.telegramLink, 8008, "no_money");
+const req3 = lastAdminReqId();
+await press("n:" + req3);
+s = await (await status(sub3.token)).json();
+assert.equal(s.status, "needs_deposit");
+assert.equal(s.minDeposit, 10);
+const dm = toChat(8008).pop().body;
+assert.ok(dm.text.includes("не пополнен") && dm.text.includes("$10"));
+assert.equal(dm.reply_markup.inline_keyboard[0][0].callback_data, "p:" + req3);
+// чужой не может нажать «Я пополнил» за другого
+await press("p:" + req3, 9999);
+assert.equal((await (await status(sub3.token)).json()).status, "needs_deposit");
+// участник нажимает «Я пополнил» в Telegram → админу повторная заявка
+const adminBefore = toChat(111).length;
+await press("p:" + req3, 8008);
+assert.equal((await (await status(sub3.token)).json()).status, "pending");
+assert.equal(toChat(111).length, adminBefore + 1);
+assert.ok(toChat(111).pop().body.text.includes("Повторная проверка"));
+// админ снова отмечает «не пополнен»; повторная кнопка на сайте сразу — слишком рано
+await press("n:" + req3);
+assert.equal((await recheck(sub3.token)).status, 429);
+// через 10 минут — можно, с сайта
+const r3 = JSON.parse(store.get("req:" + req3));
+r3.recheckAt = 1;
+store.set("req:" + req3, JSON.stringify(r3));
+assert.equal((await recheck(sub3.token)).status, 200);
+assert.equal((await (await status(sub3.token)).json()).status, "pending");
+// и теперь одобряем
+await press("a:" + req3);
+assert.equal((await (await status(sub3.token)).json()).status, "approved");
 
 // 11. Защита от спама: 6-я заявка за час с одного IP блокируется
 for (let i = 0; i < 4; i++) assert.equal((await submit("5555555" + i, "3.3.3.3")).status, 200);
@@ -160,6 +223,7 @@ assert.equal((await submit("55555559", "3.3.3.3")).status, 200);
 assert.equal((await submit("55555560", "3.3.3.3")).status, 429);
 
 // 12. Если Telegram недоступен — честная ошибка, а не «успех»
+store.delete("cfg:botname");
 const realFetch = globalThis.fetch;
 globalThis.fetch = async () => { throw new Error("network down"); };
 assert.equal((await submit("77777777", "4.4.4.4")).status, 502);
@@ -170,4 +234,4 @@ const bare = await worker.fetch(
   new Request("https://w.dev/api/submit", { method: "POST", body: "{}" }), { AVA_KV: KV });
 assert.equal(bare.status, 503);
 
-console.log("Все 16 проверок пройдены ✅");
+console.log("Все 24 проверки пройдены ✅");
