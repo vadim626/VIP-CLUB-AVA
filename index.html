@@ -2,1689 +2,975 @@
 <html lang="ru">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+    <meta name="theme-color" content="#05030d">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="format-detection" content="telephone=no">
+    <meta name="description" content="AVA TRADE — закрытый VIP-клуб трейдеров: обучение, разборы рынка и поддержка.">
 
     <title>AVA TRADE — VIP CHAT</title>
 
     <style>
-
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
+        /* =========================================================
+           ПЕРЕМЕННЫЕ ДИЗАЙНА
+           ========================================================= */
+        :root {
+            --bg: #05030d;
+            --card: rgba(22, 12, 38, 0.72);
+            --card-solid: #120a20;
+            --line: rgba(255, 255, 255, 0.08);
+            --line-strong: rgba(190, 110, 255, 0.28);
+            --text: #ffffff;
+            --text-2: rgba(235, 225, 255, 0.62);
+            --text-3: rgba(235, 225, 255, 0.38);
+            --violet: #a020ff;
+            --violet-2: #6a00ff;
+            --violet-glow: rgba(160, 32, 255, 0.35);
+            --green: #30d158;
+            --red: #ff453a;
+            --amber: #ffd60a;
+            --tg-1: #37bbfe;
+            --tg-2: #007dbb;
+            --radius-xl: 28px;
+            --radius-lg: 20px;
+            --radius-md: 14px;
+            --ease: cubic-bezier(0.22, 1, 0.36, 1);
+            --font: -apple-system, BlinkMacSystemFont, "SF Pro Display", "SF Pro Text",
+                    "Inter", "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
         }
 
-        html {
-            scroll-behavior: smooth;
-        }
+        * { margin: 0; padding: 0; box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+
+        html { scroll-behavior: smooth; -webkit-text-size-adjust: 100%; }
 
         body {
             min-height: 100vh;
-
-            font-family:
-                Arial,
-                Helvetica,
-                sans-serif;
-
-            color: #ffffff;
-
-            background:
-                radial-gradient(
-                    circle at 15% 10%,
-                    rgba(120, 0, 255, 0.30),
-                    transparent 35%
-                ),
-                radial-gradient(
-                    circle at 85% 90%,
-                    rgba(0, 110, 255, 0.25),
-                    transparent 35%
-                ),
-                radial-gradient(
-                    circle at 50% 50%,
-                    rgba(180, 0, 255, 0.08),
-                    transparent 50%
-                ),
-                #03020a;
-
+            min-height: 100dvh;
+            font-family: var(--font);
+            color: var(--text);
+            background: var(--bg);
+            -webkit-font-smoothing: antialiased;
             overflow-x: hidden;
         }
 
-
-        /* ======================================
-           ФОНОВЫЕ НЕОНОВЫЕ ЭФФЕКТЫ
-        ====================================== */
-
-        .bg {
+        /* Мягкое неоновое свечение на фоне */
+        .aura {
             position: fixed;
-
-            width: 450px;
-            height: 450px;
-
-            border-radius: 50%;
-
-            filter: blur(120px);
-
-            opacity: 0.25;
-
-            pointer-events: none;
-
+            inset: 0;
             z-index: -1;
-        }
-
-        .bg-one {
-            background: #8b00ff;
-
-            top: -220px;
-            left: -180px;
-        }
-
-        .bg-two {
-            background: #0055ff;
-
-            right: -180px;
-            bottom: -200px;
-        }
-
-        .bg-three {
-            background: #ff00d4;
-
-            top: 45%;
-            left: 45%;
-
-            opacity: 0.10;
-        }
-
-
-        /* ======================================
-           ОСНОВНОЙ КОНТЕЙНЕР
-        ====================================== */
-
-        .container {
-            width: min(900px, 94%);
-
-            margin: 0 auto;
-
-            padding: 25px 0 30px;
-        }
-
-
-        /* ======================================
-           КАРТОЧКА
-        ====================================== */
-
-        .card {
-
+            pointer-events: none;
             background:
-                linear-gradient(
-                    145deg,
-                    rgba(28, 10, 48, 0.94),
-                    rgba(5, 5, 16, 0.97)
-                );
-
-            border:
-
-                1px solid
-                rgba(170, 50, 255, 0.25);
-
-            border-radius: 28px;
-
-            box-shadow:
-
-                0 30px 90px
-                rgba(0, 0, 0, 0.55),
-
-                inset 0 1px
-                rgba(255, 255, 255, 0.06);
-
-            backdrop-filter: blur(25px);
+                radial-gradient(60% 40% at 10% 0%, rgba(130, 0, 255, 0.32), transparent 70%),
+                radial-gradient(50% 35% at 100% 100%, rgba(0, 90, 255, 0.22), transparent 70%),
+                radial-gradient(40% 30% at 60% 45%, rgba(220, 0, 255, 0.07), transparent 70%);
         }
 
+        .wrap {
+            width: min(560px, 100%);
+            margin: 0 auto;
+            padding:
+                calc(env(safe-area-inset-top) + 18px)
+                calc(env(safe-area-inset-right) + 16px)
+                calc(env(safe-area-inset-bottom) + 24px)
+                calc(env(safe-area-inset-left) + 16px);
+        }
 
-        /* ======================================
-           ГЛАВНЫЙ ЭКРАН
-        ====================================== */
-
-        .hero {
-
-            padding: 45px 35px;
-
-            text-align: center;
-
+        /* =========================================================
+           КАРТОЧКИ (стекло, как в iOS)
+           ========================================================= */
+        .card {
             position: relative;
+            background: var(--card);
+            border: 1px solid var(--line);
+            border-radius: var(--radius-xl);
+            -webkit-backdrop-filter: saturate(160%) blur(24px);
+            backdrop-filter: saturate(160%) blur(24px);
+            box-shadow:
+                0 1px 0 rgba(255, 255, 255, 0.06) inset,
+                0 24px 60px rgba(0, 0, 0, 0.45);
+        }
 
+        .card + .card { margin-top: 14px; }
+
+        /* =========================================================
+           ГЛАВНЫЙ ЭКРАН
+           ========================================================= */
+        .hero {
+            padding: 34px 22px 26px;
+            text-align: center;
             overflow: hidden;
         }
 
-
         .hero::before {
-
             content: "";
-
             position: absolute;
-
-            width: 700px;
-            height: 700px;
-
-            top: -450px;
+            width: 520px;
+            height: 520px;
+            top: -360px;
             left: 50%;
-
-            transform:
-                translateX(-50%);
-
-            background:
-                radial-gradient(
-                    circle,
-                    rgba(190, 0, 255, 0.28),
-                    transparent 65%
-                );
-
-            animation:
-                heroGlow 5s ease-in-out infinite alternate;
+            transform: translateX(-50%);
+            background: radial-gradient(circle, rgba(190, 0, 255, 0.30), transparent 65%);
+            animation: glow 6s ease-in-out infinite alternate;
+            pointer-events: none;
         }
 
-
-        @keyframes heroGlow {
-
-            from {
-                opacity: 0.4;
-
-                transform:
-                    translateX(-50%)
-                    scale(0.9);
-            }
-
-            to {
-                opacity: 1;
-
-                transform:
-                    translateX(-50%)
-                    scale(1.12);
-            }
+        @keyframes glow {
+            from { opacity: 0.45; transform: translateX(-50%) scale(0.92); }
+            to   { opacity: 1;    transform: translateX(-50%) scale(1.08); }
         }
 
-
-        /* ======================================
-           ЛОГО
-        ====================================== */
-
-        .logo {
-
+        .pill {
             position: relative;
-
-            display: inline-block;
-
-            padding: 8px 18px;
-
-            border-radius: 100px;
-
-            border:
-                1px solid
-                rgba(190, 80, 255, 0.35);
-
-            background:
-                rgba(120, 0, 255, 0.08);
-
-            color: #d8a7ff;
-
-            font-size: 14px;
-
-            font-weight: 900;
-
-            letter-spacing: 0.22em;
-
-            box-shadow:
-                0 0 30px
-                rgba(160, 0, 255, 0.12);
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            padding: 7px 14px;
+            border-radius: 999px;
+            border: 1px solid var(--line-strong);
+            background: rgba(140, 0, 255, 0.10);
+            color: #dcb8ff;
+            font-size: 12px;
+            font-weight: 700;
+            letter-spacing: 0.18em;
         }
 
-
-        /* ======================================
-           КОРОНА
-        ====================================== */
+        .pill .dot {
+            width: 6px; height: 6px; border-radius: 50%;
+            background: var(--green);
+            box-shadow: 0 0 10px var(--green);
+        }
 
         .crown {
-
             position: relative;
-
-            margin-top: 20px;
-
-            font-size: 65px;
-
+            margin-top: 18px;
+            font-size: 54px;
             line-height: 1;
-
             color: #ffcf32;
-
-            text-shadow:
-                0 0 20px
-                rgba(255, 207, 50, 0.4);
-
-            animation:
-                crownAnimation 3s ease-in-out infinite;
+            text-shadow: 0 0 22px rgba(255, 207, 50, 0.45);
+            animation: float 3.4s ease-in-out infinite;
         }
 
-
-        @keyframes crownAnimation {
-
-            0%,
-            100% {
-                transform:
-                    translateY(0)
-                    rotate(0deg);
-            }
-
-            50% {
-                transform:
-                    translateY(-7px)
-                    rotate(-2deg);
-            }
+        @keyframes float {
+            0%, 100% { transform: translateY(0) rotate(0); }
+            50%      { transform: translateY(-6px) rotate(-2deg); }
         }
-
-
-        /* ======================================
-           AVA TRADE
-        ====================================== */
 
         .brand {
-
             position: relative;
-
-            margin-top: 15px;
-
-            font-size:
-                clamp(58px, 12vw, 115px);
-
-            line-height: 0.82;
-
-            font-weight: 950;
-
-            letter-spacing: -0.07em;
-
-            background:
-                linear-gradient(
-                    180deg,
-                    #ffffff 5%,
-                    #f0dfff 35%,
-                    #b300ff 70%,
-                    #6800ff 100%
-                );
-
+            margin-top: 10px;
+            font-size: clamp(64px, 20vw, 104px);
+            line-height: 0.84;
+            font-weight: 900;
+            letter-spacing: -0.06em;
+            background: linear-gradient(180deg, #ffffff 8%, #f0dfff 38%, #b300ff 72%, #6800ff 100%);
             -webkit-background-clip: text;
-
             background-clip: text;
-
             color: transparent;
-
-            filter:
-                drop-shadow(
-                    0 0 25px
-                    rgba(180, 0, 255, 0.20)
-                );
+            filter: drop-shadow(0 0 24px rgba(180, 0, 255, 0.22));
         }
-
 
         .brand span {
-
             display: block;
-
-            margin-top: 10px;
-
-            font-size: 0.62em;
-
-            letter-spacing: 0.08em;
+            margin-top: 8px;
+            font-size: 0.56em;
+            letter-spacing: 0.06em;
         }
-
 
         .subtitle {
-
             position: relative;
-
-            margin-top: 30px;
-
-            font-size: 21px;
-
-            font-weight: 800;
-        }
-
-
-        .description {
-
-            position: relative;
-
-            max-width: 650px;
-
-            margin:
-                12px auto 30px;
-
-            color: #aaa1b9;
-
-            font-size: 16px;
-
-            line-height: 1.6;
-        }
-
-
-        /* ======================================
-           БЛОКИ
-        ====================================== */
-
-        .features {
-
-            position: relative;
-
-            max-width: 760px;
-
-            margin:
-                0 auto 30px;
-
-            display: grid;
-
-            grid-template-columns:
-                1fr 1fr;
-
-            gap: 12px;
-
-            text-align: left;
-        }
-
-
-        .feature {
-
-            padding: 18px;
-
-            display: flex;
-
-            gap: 14px;
-
-            border-radius: 18px;
-
-            background:
-                rgba(255,255,255,0.035);
-
-            border:
-                1px solid
-                rgba(190, 80, 255, 0.12);
-
-            transition:
-                0.25s;
-        }
-
-
-        .feature:hover {
-
-            transform:
-                translateY(-4px);
-
-            border-color:
-                rgba(200, 80, 255, 0.35);
-
-            background:
-                rgba(150, 0, 255, 0.06);
-
-            box-shadow:
-                0 10px 30px
-                rgba(130, 0, 255, 0.08);
-        }
-
-
-        .feature-icon {
-
-            font-size: 28px;
-
-            min-width: 35px;
-        }
-
-
-        .feature h3 {
-
-            font-size: 16px;
-
-            margin-bottom: 5px;
-        }
-
-
-        .feature p {
-
-            color: #91899d;
-
-            font-size: 13px;
-
-            line-height: 1.45;
-        }
-
-
-        /* ======================================
-           ОСНОВНАЯ КНОПКА
-        ====================================== */
-
-        .main-button {
-
-            position: relative;
-
-            width: 100%;
-
-            display: flex;
-
-            justify-content: center;
-
-            align-items: center;
-
-            gap: 10px;
-
-            padding: 17px 20px;
-
-            border: none;
-
-            border-radius: 16px;
-
-            background:
-                linear-gradient(
-                    90deg,
-                    #9b00ff,
-                    #d000ff,
-                    #5e00ff
-                );
-
-            color: white;
-
-            font-size: 15px;
-
-            font-weight: 900;
-
-            letter-spacing: 0.04em;
-
-            text-decoration: none;
-
-            cursor: pointer;
-
-            box-shadow:
-                0 15px 40px
-                rgba(155, 0, 255, 0.28);
-
-            transition:
-                0.2s;
-        }
-
-
-        .main-button:hover {
-
-            transform:
-                translateY(-2px);
-
-            filter:
-                brightness(1.12);
-
-            box-shadow:
-                0 18px 45px
-                rgba(180, 0, 255, 0.38);
-        }
-
-
-        .main-button span {
-
+            margin-top: 22px;
             font-size: 20px;
+            font-weight: 700;
+            letter-spacing: 0.02em;
         }
 
-
-        .risk {
-
+        .lead {
             position: relative;
-
-            margin-top: 15px;
-
-            color: #655c70;
-
-            font-size: 10px;
-        }
-
-
-        /* ======================================
-           ШАГИ
-        ====================================== */
-
-        .step {
-
-            margin-top: 18px;
-
-            padding: 30px;
-
-            animation:
-                appear 0.5s ease;
-        }
-
-
-        @keyframes appear {
-
-            from {
-                opacity: 0;
-
-                transform:
-                    translateY(15px);
-            }
-
-            to {
-                opacity: 1;
-
-                transform:
-                    translateY(0);
-            }
-        }
-
-
-        .step-number {
-
-            color: #c34cff;
-
-            font-size: 11px;
-
-            font-weight: 900;
-
-            letter-spacing: 0.2em;
-        }
-
-
-        .step h2 {
-
-            margin-top: 8px;
-
-            font-size: 29px;
-        }
-
-
-        .step-description {
-
-            margin-top: 10px;
-
-            color: #9b91a6;
-
-            line-height: 1.6;
-        }
-
-
-        /* ======================================
-           ВТОРАЯ КНОПКА
-        ====================================== */
-
-        .secondary-button {
-
-            width: 100%;
-
-            margin-top: 12px;
-
-            padding: 16px;
-
-            border-radius: 16px;
-
-            background:
-                rgba(255,255,255,0.05);
-
-            color: white;
-
-            border:
-                1px solid
-                rgba(255,255,255,0.12);
-
-            font-size: 14px;
-
-            font-weight: 800;
-
-            cursor: pointer;
-
-            transition:
-                0.2s;
-        }
-
-
-        .secondary-button:not(:disabled):hover {
-
-            background:
-                rgba(170, 0, 255, 0.10);
-
-            border-color:
-                rgba(200, 70, 255, 0.35);
-        }
-
-
-        .secondary-button.locked {
-
-            opacity: 0.35;
-
-            cursor: not-allowed;
-        }
-
-
-        .hint {
-
-            margin-top: 12px;
-
-            color: #716779;
-
-            font-size: 12px;
-
-            text-align: center;
-        }
-
-
-        /* ======================================
-           ID FORM
-        ====================================== */
-
-        form {
-
-            margin-top: 20px;
-
-            display: flex;
-
-            flex-direction: column;
-
-            gap: 12px;
-        }
-
-
-        input {
-
-            width: 100%;
-
-            padding: 17px;
-
-            border-radius: 15px;
-
-            border:
-                1px solid
-                rgba(255,255,255,0.12);
-
-            background:
-                #080510;
-
-            color: white;
-
-            font-size: 16px;
-
-            outline: none;
-
-            transition:
-                0.2s;
-        }
-
-
-        input:focus {
-
-            border-color:
-                rgba(190, 60, 255, 0.55);
-
-            box-shadow:
-                0 0 0 3px
-                rgba(160, 0, 255, 0.07);
-        }
-
-
-        input::placeholder {
-
-            color: #62596b;
-        }
-
-
-        /* ======================================
-           ПРОВЕРКА
-        ====================================== */
-
-        .checking {
-
-            margin-top: 20px;
-
-            padding: 20px;
-
-            border-radius: 17px;
-
-            background:
-                rgba(255,255,255,0.04);
-
-            border:
-                1px solid
-                rgba(180, 50, 255, 0.12);
-
-            display: flex;
-
-            align-items: center;
-
-            gap: 15px;
-        }
-
-
-        .loader {
-
-            width: 30px;
-            height: 30px;
-
-            flex-shrink: 0;
-
-            border-radius: 50%;
-
-            border:
-                3px solid
-                rgba(255,255,255,0.08);
-
-            border-top-color:
-                #c000ff;
-
-            border-right-color:
-                #6600ff;
-
-            animation:
-                spin 0.8s linear infinite;
-        }
-
-
-        @keyframes spin {
-
-            to {
-                transform:
-                    rotate(360deg);
-            }
-        }
-
-
-        .checking strong {
-
-            display: block;
-
-            font-size: 14px;
-        }
-
-
-        .checking p {
-
-            margin-top: 4px;
-
-            color: #756b7d;
-
-            font-size: 12px;
-        }
-
-
-        /* ======================================
-           РЕЗУЛЬТАТ
-        ====================================== */
-
-        .result {
-
-            margin-top: 20px;
-
-            padding: 20px;
-
-            display: flex;
-
-            gap: 15px;
-
-            border-radius: 17px;
-
-            background:
-                rgba(255, 60, 100, 0.06);
-
-            border:
-                1px solid
-                rgba(255, 70, 100, 0.25);
-
-            animation:
-                appear 0.4s ease;
-        }
-
-
-        .result-icon {
-
-            width: 36px;
-            height: 36px;
-
-            flex-shrink: 0;
-
-            display: flex;
-
-            justify-content: center;
-            align-items: center;
-
-            border-radius: 50%;
-
-            background:
-                rgba(255, 60, 90, 0.14);
-
-            color:
-                #ff7289;
-
-            font-weight: 900;
-        }
-
-
-        .result strong {
-
+            max-width: 420px;
+            margin: 8px auto 0;
+            color: var(--text-2);
             font-size: 15px;
-        }
-
-
-        .result p {
-
-            margin-top: 6px;
-
-            color: #a0838b;
-
-            font-size: 13px;
-
             line-height: 1.5;
         }
 
-
-        .admin-link {
-
-            display: inline-block;
-
-            margin-top: 12px;
-
-            color: #d070ff;
-
-            font-size: 12px;
-
-            font-weight: 900;
-
-            text-decoration: none;
+        /* Преимущества — сетка 2×2 */
+        .features {
+            position: relative;
+            margin: 24px 0 22px;
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 10px;
+            text-align: left;
         }
 
-
-        .admin-link:hover {
-
-            color: #e0a0ff;
+        .feature {
+            padding: 14px;
+            border-radius: var(--radius-lg);
+            background: rgba(255, 255, 255, 0.035);
+            border: 1px solid var(--line);
+            transition: transform 0.3s var(--ease), border-color 0.3s var(--ease);
         }
 
+        .feature-icon {
+            width: 36px; height: 36px;
+            display: grid; place-items: center;
+            border-radius: 11px;
+            background: linear-gradient(145deg, rgba(160, 32, 255, 0.28), rgba(106, 0, 255, 0.12));
+            font-size: 18px;
+        }
 
-        /* ======================================
-           FOOTER
-        ====================================== */
+        .feature h3 { margin-top: 10px; font-size: 15px; font-weight: 650; }
+        .feature p  { margin-top: 3px; color: var(--text-3); font-size: 12.5px; line-height: 1.4; }
 
-        footer {
+        @media (hover: hover) {
+            .feature:hover { transform: translateY(-3px); border-color: var(--line-strong); }
+        }
 
-            padding: 22px 5px;
-
+        /* =========================================================
+           КНОПКИ
+           ========================================================= */
+        .btn {
+            position: relative;
+            width: 100%;
+            min-height: 54px;
             display: flex;
-
-            justify-content: space-between;
-
-            color: #554d5f;
-
-            font-size: 12px;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+            padding: 15px 20px;
+            border: none;
+            border-radius: var(--radius-md);
+            font: inherit;
+            font-size: 16px;
+            font-weight: 650;
+            letter-spacing: 0.01em;
+            color: #fff;
+            text-decoration: none;
+            cursor: pointer;
+            user-select: none;
+            -webkit-user-select: none;
+            transition: transform 0.18s var(--ease), filter 0.2s, opacity 0.2s, box-shadow 0.25s;
         }
 
+        .btn:active { transform: scale(0.97); }
+        .btn:focus-visible { outline: 3px solid rgba(200, 120, 255, 0.6); outline-offset: 3px; }
 
-        footer a {
+        .btn-primary {
+            background: linear-gradient(100deg, #9b00ff, #cc00ff 50%, #6200ff);
+            box-shadow: 0 12px 32px var(--violet-glow), 0 1px 0 rgba(255,255,255,0.25) inset;
+        }
 
-            color: #bd6cff;
+        .btn-secondary {
+            margin-top: 10px;
+            background: rgba(255, 255, 255, 0.07);
+            border: 1px solid var(--line);
+        }
 
+        .btn[disabled], .btn.is-locked { opacity: 0.38; pointer-events: none; }
+
+        .btn .arrow { font-size: 18px; transition: transform 0.25s var(--ease); }
+        @media (hover: hover) { .btn:hover .arrow { transform: translateX(3px); } .btn-primary:hover { filter: brightness(1.08); } }
+
+        .btn-link {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            margin-top: 12px;
+            color: #d394ff;
+            font-size: 14px;
+            font-weight: 600;
             text-decoration: none;
         }
 
-
-        /* ======================================
-           HIDDEN
-        ====================================== */
-
-        .hidden {
-            display: none !important;
+        /* Кнопка в стиле Telegram */
+        .btn-telegram {
+            min-height: 62px;
+            border-radius: 18px;
+            background: linear-gradient(180deg, var(--tg-1), var(--tg-2));
+            box-shadow:
+                0 14px 36px rgba(42, 171, 238, 0.38),
+                0 1px 0 rgba(255, 255, 255, 0.35) inset;
+            font-size: 17px;
+            overflow: hidden;
         }
 
-
-        /* ======================================
-           MOBILE
-        ====================================== */
-
-        @media (max-width: 650px) {
-
-            .container {
-
-                width: 94%;
-
-                padding-top: 15px;
-            }
-
-
-            .hero {
-
-                padding: 30px 18px;
-            }
-
-
-            .features {
-
-                grid-template-columns:
-                    1fr;
-            }
-
-
-            .brand {
-
-                font-size: 68px;
-            }
-
-
-            .subtitle {
-
-                font-size: 18px;
-            }
-
-
-            .step {
-
-                padding: 22px 18px;
-            }
-
-
-            footer {
-
-                flex-direction: column;
-
-                gap: 10px;
-
-                text-align: center;
-            }
+        .btn-telegram::after {
+            content: "";
+            position: absolute;
+            top: 0; bottom: 0;
+            width: 40%;
+            left: -60%;
+            background: linear-gradient(100deg, transparent, rgba(255,255,255,0.28), transparent);
+            animation: shine 3.2s ease-in-out infinite;
         }
 
+        @keyframes shine { 0%, 55% { left: -60%; } 100% { left: 130%; } }
+
+        .btn-telegram svg { width: 24px; height: 24px; flex-shrink: 0; }
+
+        .risk {
+            position: relative;
+            margin-top: 14px;
+            color: var(--text-3);
+            font-size: 11px;
+            line-height: 1.4;
+        }
+
+        /* =========================================================
+           ШАГИ
+           ========================================================= */
+        .step {
+            padding: 24px 20px 22px;
+            animation: rise 0.55s var(--ease) both;
+        }
+
+        @keyframes rise {
+            from { opacity: 0; transform: translateY(18px) scale(0.985); }
+            to   { opacity: 1; transform: none; }
+        }
+
+        .progress {
+            display: flex;
+            gap: 6px;
+            margin-bottom: 18px;
+        }
+
+        .progress i {
+            flex: 1;
+            height: 4px;
+            border-radius: 4px;
+            background: rgba(255, 255, 255, 0.10);
+            overflow: hidden;
+            position: relative;
+        }
+
+        .progress i.on::before {
+            content: "";
+            position: absolute;
+            inset: 0;
+            background: linear-gradient(90deg, #b000ff, #6a00ff);
+            animation: fill 0.6s var(--ease) both;
+        }
+
+        @keyframes fill { from { transform: scaleX(0); transform-origin: left; } to { transform: scaleX(1); transform-origin: left; } }
+
+        .eyebrow {
+            color: #c56dff;
+            font-size: 12px;
+            font-weight: 700;
+            letter-spacing: 0.16em;
+            text-transform: uppercase;
+        }
+
+        .step h2 {
+            margin-top: 6px;
+            font-size: 26px;
+            font-weight: 750;
+            letter-spacing: -0.02em;
+            line-height: 1.15;
+        }
+
+        .step-text {
+            margin: 8px 0 18px;
+            color: var(--text-2);
+            font-size: 15px;
+            line-height: 1.5;
+        }
+
+        .hint {
+            margin-top: 12px;
+            color: var(--text-3);
+            font-size: 13px;
+            text-align: center;
+            line-height: 1.4;
+        }
+
+        /* Поле ввода ID */
+        .field {
+            position: relative;
+            margin-bottom: 12px;
+        }
+
+        .field input {
+            width: 100%;
+            height: 58px;
+            padding: 0 18px 0 50px;
+            border-radius: var(--radius-md);
+            border: 1px solid rgba(255, 255, 255, 0.12);
+            background: rgba(4, 2, 12, 0.7);
+            color: #fff;
+            font: inherit;
+            font-size: 19px;
+            font-weight: 600;
+            letter-spacing: 0.08em;
+            font-variant-numeric: tabular-nums;
+            outline: none;
+            transition: border-color 0.2s, box-shadow 0.2s;
+        }
+
+        .field input::placeholder { color: rgba(235, 225, 255, 0.28); letter-spacing: 0.01em; font-weight: 500; font-size: 16px; }
+        .field input:focus { border-color: rgba(190, 80, 255, 0.65); box-shadow: 0 0 0 4px rgba(160, 32, 255, 0.14); }
+        .field.has-error input { border-color: rgba(255, 69, 58, 0.7); box-shadow: 0 0 0 4px rgba(255, 69, 58, 0.12); }
+
+        .field .prefix {
+            position: absolute;
+            left: 18px; top: 50%;
+            transform: translateY(-50%);
+            color: var(--text-3);
+            font-weight: 700;
+            font-size: 15px;
+        }
+
+        .field-error {
+            min-height: 18px;
+            margin: -4px 2px 10px;
+            color: #ff8a80;
+            font-size: 13px;
+        }
+
+        /* =========================================================
+           СТАТУСЫ
+           ========================================================= */
+        .status {
+            text-align: center;
+            padding: 6px 4px 2px;
+        }
+
+        .status-icon {
+            width: 76px; height: 76px;
+            margin: 4px auto 16px;
+            display: grid; place-items: center;
+            border-radius: 50%;
+            font-size: 34px;
+            position: relative;
+        }
+
+        .status h2 { font-size: 24px; }
+        .status .step-text { margin-bottom: 16px; }
+
+        .is-pending .status-icon {
+            background: rgba(255, 214, 10, 0.10);
+            border: 1px solid rgba(255, 214, 10, 0.28);
+        }
+
+        .is-pending .status-icon::before {
+            content: "";
+            position: absolute;
+            inset: -7px;
+            border-radius: 50%;
+            border: 2px solid transparent;
+            border-top-color: var(--amber);
+            border-right-color: rgba(255, 214, 10, 0.35);
+            animation: spin 1.1s linear infinite;
+        }
+
+        @keyframes spin { to { transform: rotate(360deg); } }
+
+        .is-approved .status-icon {
+            background: rgba(48, 209, 88, 0.12);
+            border: 1px solid rgba(48, 209, 88, 0.35);
+            box-shadow: 0 0 40px rgba(48, 209, 88, 0.25);
+            animation: pop 0.6s var(--ease) both;
+        }
+
+        .is-rejected .status-icon {
+            background: rgba(255, 69, 58, 0.10);
+            border: 1px solid rgba(255, 69, 58, 0.32);
+        }
+
+        @keyframes pop { 0% { transform: scale(0.4); opacity: 0; } 70% { transform: scale(1.08); } 100% { transform: none; opacity: 1; } }
+
+        .id-chip {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            margin-bottom: 18px;
+            padding: 8px 14px;
+            border-radius: 999px;
+            background: rgba(255, 255, 255, 0.06);
+            border: 1px solid var(--line);
+            color: var(--text-2);
+            font-size: 14px;
+        }
+
+        .id-chip b { color: #fff; font-weight: 650; letter-spacing: 0.05em; font-variant-numeric: tabular-nums; }
+
+        .live {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            color: var(--text-3);
+            font-size: 13px;
+        }
+
+        .live::before {
+            content: "";
+            width: 7px; height: 7px; border-radius: 50%;
+            background: var(--amber);
+            animation: blink 1.4s ease-in-out infinite;
+        }
+
+        @keyframes blink { 50% { opacity: 0.25; } }
+
+        .notice {
+            margin-top: 14px;
+            padding: 12px 14px;
+            border-radius: var(--radius-md);
+            background: rgba(255, 255, 255, 0.04);
+            border: 1px solid var(--line);
+            color: var(--text-2);
+            font-size: 13px;
+            line-height: 1.45;
+            text-align: left;
+        }
+
+        .toast {
+            position: fixed;
+            left: 50%;
+            bottom: calc(env(safe-area-inset-bottom) + 18px);
+            transform: translate(-50%, calc(100% + 60px));
+            visibility: hidden;
+            max-width: calc(100% - 32px);
+            padding: 13px 18px;
+            border-radius: 16px;
+            background: rgba(40, 24, 60, 0.92);
+            -webkit-backdrop-filter: blur(20px);
+            backdrop-filter: blur(20px);
+            border: 1px solid var(--line-strong);
+            color: #fff;
+            font-size: 14px;
+            line-height: 1.4;
+            box-shadow: 0 16px 40px rgba(0,0,0,0.5);
+            transition: transform 0.45s var(--ease), visibility 0s 0.45s;
+            z-index: 10;
+        }
+
+        .toast.show { transform: translate(-50%, 0); visibility: visible; transition: transform 0.45s var(--ease); }
+
+        /* =========================================================
+           ПОДВАЛ
+           ========================================================= */
+        footer {
+            margin-top: 22px;
+            padding: 0 6px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 10px;
+            color: var(--text-3);
+            font-size: 12.5px;
+        }
+
+        footer a { color: #c27bff; text-decoration: none; font-weight: 600; }
+
+        .hidden { display: none !important; }
+
+        @media (max-width: 380px) {
+            .features { grid-template-columns: 1fr; }
+            .step h2 { font-size: 23px; }
+        }
+
+        @media (prefers-reduced-motion: reduce) {
+            *, *::before, *::after { animation: none !important; transition: none !important; }
+            html { scroll-behavior: auto; }
+        }
     </style>
 </head>
 
-
 <body>
+    <div class="aura" aria-hidden="true"></div>
 
+    <main class="wrap">
 
-    <div class="bg bg-one"></div>
-    <div class="bg bg-two"></div>
-    <div class="bg bg-three"></div>
-
-
-    <main class="container">
-
-
-        <!-- =====================================
+        <!-- =====================================================
              ГЛАВНЫЙ ЭКРАН
-        ====================================== -->
-
+             ===================================================== -->
         <section class="card hero">
-
-
-            <div class="logo">
-                AVA TRADE
-            </div>
-
-
-            <div class="crown">
-                ♛
-            </div>
-
-
-            <div class="brand">
-
-                AVA
-
-                <span>
-                    TRADE
-                </span>
-
-            </div>
-
-
-            <div class="subtitle">
-                VIP CHAT
-            </div>
-
-
-            <div class="description">
-
-                Закрытое пространство для трейдеров.
-                Торговые идеи, обучение, инструменты
-                и поддержка в одном месте.
-
-            </div>
-
-
-            <!-- ПРЕИМУЩЕСТВА -->
+            <div class="pill"><span class="dot"></span>AVA TRADE</div>
+            <div class="crown" aria-hidden="true">♛</div>
+            <h1 class="brand">AVA<span>TRADE</span></h1>
+            <div class="subtitle">VIP CHAT</div>
+            <p class="lead">
+                Закрытое пространство для трейдеров. Торговые идеи, обучение,
+                инструменты и поддержка — в одном месте.
+            </p>
 
             <div class="features">
-
-
                 <div class="feature">
-
-                    <div class="feature-icon">
-                        🤖
-                    </div>
-
-                    <div>
-
-                        <h3>
-                            Торговый бот
-                        </h3>
-
-                        <p>
-                            Торговые сигналы и
-                            дополнительные инструменты.
-                        </p>
-
-                    </div>
-
+                    <div class="feature-icon">🤖</div>
+                    <h3>Торговый бот</h3>
+                    <p>Сигналы и дополнительные инструменты.</p>
                 </div>
-
-
                 <div class="feature">
-
-                    <div class="feature-icon">
-                        📊
-                    </div>
-
-                    <div>
-
-                        <h3>
-                            Копи-трейдинг
-                        </h3>
-
-                        <p>
-                            Возможность следить
-                            за торговыми сделками.
-                        </p>
-
-                    </div>
-
+                    <div class="feature-icon">📊</div>
+                    <h3>Копи-трейдинг</h3>
+                    <p>Следите за торговыми сделками.</p>
                 </div>
-
-
                 <div class="feature">
-
-                    <div class="feature-icon">
-                        🎓
-                    </div>
-
-                    <div>
-
-                        <h3>
-                            Обучение
-                        </h3>
-
-                        <p>
-                            Разборы рынка, обучение
-                            и торговые ситуации.
-                        </p>
-
-                    </div>
-
+                    <div class="feature-icon">🎓</div>
+                    <h3>Обучение</h3>
+                    <p>Разборы рынка и торговые ситуации.</p>
                 </div>
-
-
                 <div class="feature">
-
-                    <div class="feature-icon">
-                        💬
-                    </div>
-
-                    <div>
-
-                        <h3>
-                            Поддержка
-                        </h3>
-
-                        <p>
-                            Связь с администратором
-                            и помощь по процессу.
-                        </p>
-
-                    </div>
-
+                    <div class="feature-icon">💬</div>
+                    <h3>Поддержка</h3>
+                    <p>Связь с администратором.</p>
                 </div>
-
-
             </div>
 
-
-            <button
-                class="main-button"
-                id="joinButton"
-            >
-
-                ВСТУПИТЬ В VIP
-
-                <span>
-                    →
-                </span>
-
+            <button class="btn btn-primary" id="joinButton" type="button">
+                Вступить в VIP <span class="arrow">→</span>
             </button>
 
-
-            <div class="risk">
-
-                Торговля связана с риском.
-                Результаты не гарантируются.
-
-            </div>
-
+            <p class="risk">Торговля связана с риском. Результаты не гарантируются.</p>
         </section>
 
-
-
-        <!-- =====================================
-             ШАГ 1
-        ====================================== -->
-
-        <section
-            class="card step hidden"
-            id="registrationSection"
-        >
-
-
-            <div class="step-number">
-                ШАГ 01
-            </div>
-
-
-            <h2>
-                Пройдите регистрацию
-            </h2>
-
-
-            <p class="step-description">
-
-                Для продолжения перейдите по ссылке
-                и завершите регистрацию у брокера.
-
+        <!-- =====================================================
+             ШАГ 1 — РЕГИСТРАЦИЯ
+             ===================================================== -->
+        <section class="card step hidden" id="registrationSection">
+            <div class="progress" aria-hidden="true"><i class="on"></i><i></i><i></i></div>
+            <div class="eyebrow">Шаг 1 из 3</div>
+            <h2>Пройдите регистрацию</h2>
+            <p class="step-text">
+                Зарегистрируйтесь у брокера по ссылке ниже. Доступ в клуб
+                выдаётся только аккаунтам, созданным по этой ссылке.
             </p>
 
-
-            <a
-                class="main-button"
-                id="brokerLink"
-
-                href="https://u3.shortink.io/register?utm_campaign=787509&utm_source=affiliate&utm_medium=sr&a=o7nD89164UWb0o&ac=avatrader&code=WELCOME50"
-
-                target="_blank"
-
-                rel="noopener noreferrer"
-            >
-
-                ПРОЙТИ РЕГИСТРАЦИЮ
-
-                <span>
-                    ↗
-                </span>
-
+            <a class="btn btn-primary" id="brokerLink"
+               href="https://u3.shortink.io/register?utm_campaign=787509&utm_source=affiliate&utm_medium=sr&a=o7nD89164UWb0o&ac=avatrader&code=WELCOME50"
+               target="_blank" rel="noopener noreferrer">
+                Пройти регистрацию <span class="arrow">↗</span>
             </a>
 
-
-            <button
-                class="secondary-button locked"
-                id="registeredButton"
-                disabled
-            >
-
-                Я ЗАРЕГИСТРИРОВАЛСЯ
-
+            <button class="btn btn-secondary is-locked" id="registeredButton" type="button" disabled>
+                Я зарегистрировался
             </button>
 
-
-            <div
-                class="hint"
-                id="registrationHint"
-            >
-
-                Сначала перейдите к регистрации.
-
-            </div>
-
+            <p class="hint" id="registrationHint">Сначала перейдите к регистрации.</p>
         </section>
 
-
-
-        <!-- =====================================
-             ШАГ 2 — ID
-        ====================================== -->
-
-        <section
-            class="card step hidden"
-            id="idSection"
-        >
-
-
-            <div class="step-number">
-                ШАГ 02
-            </div>
-
-
-            <h2>
-                Введите ID аккаунта
-            </h2>
-
-
-            <p class="step-description">
-
-                Введите ID аккаунта, который вы
-                использовали при регистрации.
-
+        <!-- =====================================================
+             ШАГ 2 — ВВОД ID
+             ===================================================== -->
+        <section class="card step hidden" id="idSection">
+            <div class="progress" aria-hidden="true"><i class="on"></i><i class="on"></i><i></i></div>
+            <div class="eyebrow">Шаг 2 из 3</div>
+            <h2>Введите ID аккаунта</h2>
+            <p class="step-text">
+                Ваш ID указан в профиле Pocket Option. Администратор проверит,
+                что аккаунт создан по ссылке клуба.
             </p>
 
+            <form id="idForm" novalidate>
+                <div class="field" id="idField">
+                    <span class="prefix">ID</span>
+                    <input type="text" id="accountId" inputmode="numeric" pattern="[0-9]*"
+                           maxlength="12" autocomplete="off" placeholder="Например, 12345678"
+                           aria-label="ID аккаунта Pocket Option" aria-describedby="idError">
+                </div>
+                <div class="field-error" id="idError" role="alert"></div>
 
-            <form id="idForm">
-
-
-                <input
-                    type="text"
-                    id="accountId"
-
-                    placeholder="Введите ID аккаунта"
-
-                    autocomplete="off"
-
-                    required
-                >
-
-
-                <button
-                    type="submit"
-                    class="main-button"
-                >
-
-                    ПРОВЕРИТЬ ID
-
-                    <span>
-                        →
-                    </span>
-
+                <button type="submit" class="btn btn-primary" id="submitButton">
+                    Отправить на проверку <span class="arrow">→</span>
                 </button>
-
-
             </form>
-
-
-
-            <!-- =================================
-                 АНИМАЦИЯ ПРОВЕРКИ
-            ================================== -->
-
-            <div
-                class="checking hidden"
-                id="checking"
-            >
-
-
-                <div class="loader"></div>
-
-
-                <div>
-
-                    <strong>
-                        Проверяем ID...
-                    </strong>
-
-                    <p>
-                        Анализируем данные аккаунта.
-                    </p>
-
-                </div>
-
-
-            </div>
-
-
-
-            <!-- =================================
-                 РЕЗУЛЬТАТ
-            ================================== -->
-
-            <div
-                class="result hidden"
-                id="result"
-            >
-
-
-                <div class="result-icon">
-                    !
-                </div>
-
-
-                <div>
-
-                    <strong>
-                        ID не подтверждён
-                    </strong>
-
-
-                    <p>
-
-                        Введённый ID не подтверждён.
-                        Для дальнейшей проверки
-                        обратитесь к администратору
-                        AVA TRADE.
-
-                    </p>
-
-
-                    <a
-                        class="admin-link"
-
-                        href="https://t.me/m/6nZG9TLfMjIy"
-
-                        target="_blank"
-
-                        rel="noopener noreferrer"
-                    >
-
-                        НАПИСАТЬ АДМИНИСТРАТОРУ →
-
-                    </a>
-
-                </div>
-
-
-            </div>
-
-
         </section>
 
+        <!-- =====================================================
+             ШАГ 3 — СТАТУС ПРОВЕРКИ
+             ===================================================== -->
+        <section class="card step hidden" id="statusSection" aria-live="polite">
+            <div class="progress" aria-hidden="true"><i class="on"></i><i class="on"></i><i class="on"></i></div>
 
+            <!-- Ожидание -->
+            <div class="status is-pending hidden" id="statePending">
+                <div class="status-icon">⏳</div>
+                <div class="eyebrow">Шаг 3 из 3</div>
+                <h2>ID на проверке</h2>
+                <p class="step-text">
+                    Администратор проверяет вашу регистрацию. Обычно это занимает
+                    несколько минут. Страницу можно закрыть — статус сохранится.
+                </p>
+                <div class="id-chip">ID <b class="js-id"></b></div>
+                <div><span class="live">Ожидаем решения</span></div>
+            </div>
 
-        <!-- =====================================
-             FOOTER
-        ====================================== -->
+            <!-- Одобрено -->
+            <div class="status is-approved hidden" id="stateApproved">
+                <div class="status-icon">✓</div>
+                <div class="eyebrow" style="color:#5ee07f">Доступ открыт</div>
+                <h2>Добро пожаловать в VIP</h2>
+                <p class="step-text">Ваш ID подтверждён. Вступайте в закрытый канал AVA TRADE.</p>
+
+                <a class="btn btn-telegram" id="channelButton" href="#" target="_blank" rel="noopener noreferrer">
+                    <svg viewBox="0 0 24 24" fill="#fff" aria-hidden="true">
+                        <path d="M21.94 4.3 18.8 19.12c-.24 1.05-.86 1.31-1.74.82l-4.8-3.54-2.32 2.23c-.26.26-.47.47-.96.47l.34-4.88 8.88-8.02c.39-.34-.08-.53-.6-.19L6.62 13l-4.72-1.48c-1.03-.32-1.05-1.03.21-1.52L20.56 2.9c.85-.31 1.6.2 1.38 1.4Z"/>
+                    </svg>
+                    Вступить в VIP-канал
+                </a>
+
+                <div class="notice">
+                    🔒 Ссылка персональная и одноразовая — по ней может вступить
+                    только один человек. Не передавайте её другим.
+                </div>
+            </div>
+
+            <!-- Отклонено -->
+            <div class="status is-rejected hidden" id="stateRejected">
+                <div class="status-icon">!</div>
+                <h2>ID не подтверждён</h2>
+                <p class="step-text">
+                    Аккаунт не найден среди регистраций по ссылке клуба. Проверьте ID
+                    или зарегистрируйтесь по ссылке из шага 1.
+                </p>
+                <div class="id-chip">ID <b class="js-id"></b></div>
+                <button class="btn btn-primary" id="retryButton" type="button">Ввести другой ID</button>
+                <a class="btn-link" href="https://t.me/m/6nZG9TLfMjIy" target="_blank" rel="noopener noreferrer">
+                    Написать администратору →
+                </a>
+            </div>
+        </section>
 
         <footer>
-
-
-            <div>
-                © AVA TRADE
-            </div>
-
-
-            <a
-                href="https://t.me/m/6nZG9TLfMjIy"
-
-                target="_blank"
-
-                rel="noopener noreferrer"
-            >
-
-                Администратор — AVA TRADE
-
-            </a>
-
-
+            <span>© AVA TRADE</span>
+            <a href="https://t.me/m/6nZG9TLfMjIy" target="_blank" rel="noopener noreferrer">Администратор</a>
         </footer>
-
-
     </main>
 
-
+    <div class="toast" id="toast" role="status"></div>
 
     <script>
+    (function () {
+        "use strict";
 
+        /* =====================================================
+           НАСТРОЙКА
+           Адрес сервера проверки (Cloudflare Worker).
+           Это НЕ секрет — токен бота хранится только на сервере.
+           ===================================================== */
+        var API_URL = "";   // например: "https://ava-trade-verify.ВАШ-ЛОГИН.workers.dev"
 
-        // =========================================
-        // ЭЛЕМЕНТЫ
-        // =========================================
+        var STORAGE_KEY = "ava_verify_v1";
+        var POLL_MS = 6000;
 
-        const joinButton =
-            document.getElementById(
-                "joinButton"
-            );
+        var $ = function (id) { return document.getElementById(id); };
 
+        var joinButton = $("joinButton");
+        var registrationSection = $("registrationSection");
+        var brokerLink = $("brokerLink");
+        var registeredButton = $("registeredButton");
+        var registrationHint = $("registrationHint");
+        var idSection = $("idSection");
+        var idForm = $("idForm");
+        var idField = $("idField");
+        var accountId = $("accountId");
+        var idError = $("idError");
+        var submitButton = $("submitButton");
+        var statusSection = $("statusSection");
+        var channelButton = $("channelButton");
+        var retryButton = $("retryButton");
+        var toast = $("toast");
 
-        const registrationSection =
-            document.getElementById(
-                "registrationSection"
-            );
+        var pollTimer = null;
 
+        /* ---------- Сохранение заявки в браузере ---------- */
+        function loadSaved() {
+            try { return JSON.parse(localStorage.getItem(STORAGE_KEY) || "null"); }
+            catch (e) { return null; }
+        }
+        function save(data) {
+            try { localStorage.setItem(STORAGE_KEY, JSON.stringify(data)); } catch (e) {}
+        }
+        function clearSaved() {
+            try { localStorage.removeItem(STORAGE_KEY); } catch (e) {}
+        }
 
-        const brokerLink =
-            document.getElementById(
-                "brokerLink"
-            );
+        /* ---------- Вспомогательное ---------- */
+        function show(el) { el.classList.remove("hidden"); }
+        function hide(el) { el.classList.add("hidden"); }
+        function reveal(el) {
+            show(el);
+            setTimeout(function () { el.scrollIntoView({ behavior: "smooth", block: "center" }); }, 80);
+        }
+        function showToast(text) {
+            toast.textContent = text;
+            toast.classList.add("show");
+            clearTimeout(showToast.t);
+            showToast.t = setTimeout(function () { toast.classList.remove("show"); }, 4200);
+        }
+        function setError(text) {
+            idError.textContent = text || "";
+            idField.classList.toggle("has-error", Boolean(text));
+        }
+        function setBusy(busy) {
+            submitButton.disabled = busy;
+            submitButton.innerHTML = busy ? "Отправляем…" : 'Отправить на проверку <span class="arrow">→</span>';
+        }
 
+        var ERRORS = {
+            invalid_id: "ID состоит только из цифр (от 5 до 12).",
+            rate_limited: "Слишком много попыток. Попробуйте через час.",
+            telegram_unavailable: "Не удалось отправить заявку. Попробуйте ещё раз через минуту.",
+            not_configured: "Проверка временно недоступна. Напишите администратору.",
+            forbidden_origin: "Проверка временно недоступна. Напишите администратору.",
+            network: "Нет связи с сервером. Проверьте интернет и попробуйте снова."
+        };
 
-        const registeredButton =
-            document.getElementById(
-                "registeredButton"
-            );
+        /* ---------- Отображение статуса ---------- */
+        function renderStatus(data) {
+            hide(idSection);
+            show(statusSection);
+            ["statePending", "stateApproved", "stateRejected"].forEach(function (id) { hide($(id)); });
 
+            Array.prototype.forEach.call(document.querySelectorAll(".js-id"), function (el) {
+                el.textContent = data.pocketId || "";
+            });
 
-        const registrationHint =
-            document.getElementById(
-                "registrationHint"
-            );
-
-
-        const idSection =
-            document.getElementById(
-                "idSection"
-            );
-
-
-        const idForm =
-            document.getElementById(
-                "idForm"
-            );
-
-
-        const accountId =
-            document.getElementById(
-                "accountId"
-            );
-
-
-        const checking =
-            document.getElementById(
-                "checking"
-            );
-
-
-        const result =
-            document.getElementById(
-                "result"
-            );
-
-
-
-        // =========================================
-        // ВСТУПИТЬ В VIP
-        // =========================================
-
-        joinButton.addEventListener(
-            "click",
-            function () {
-
-
-                registrationSection
-                    .classList
-                    .remove("hidden");
-
-
-                setTimeout(
-                    function () {
-
-                        registrationSection
-                            .scrollIntoView({
-
-                                behavior:
-                                    "smooth",
-
-                                block:
-                                    "center"
-
-                            });
-
-                    },
-                    100
-                );
-
+            if (data.status === "approved" && data.inviteLink) {
+                channelButton.href = data.inviteLink;
+                show($("stateApproved"));
+                stopPolling();
+            } else if (data.status === "rejected") {
+                show($("stateRejected"));
+                stopPolling();
+            } else {
+                show($("statePending"));
+                startPolling();
             }
-        );
+        }
 
+        /* ---------- Запросы к серверу ---------- */
+        function api(path, options) {
+            return fetch(API_URL.replace(/\/$/, "") + path, options).then(function (res) {
+                return res.json().catch(function () { return {}; }).then(function (body) {
+                    return { ok: res.ok, status: res.status, body: body };
+                });
+            });
+        }
 
+        function checkStatus() {
+            var saved = loadSaved();
+            if (!saved || !saved.token || !API_URL) return;
 
-        // =========================================
-        // РЕГИСТРАЦИЯ
-        // =========================================
+            api("/api/status", { headers: { Authorization: "Bearer " + saved.token }, cache: "no-store" })
+                .then(function (r) {
+                    if (r.ok) {
+                        saved.status = r.body.status;
+                        saved.pocketId = r.body.pocketId || saved.pocketId;
+                        save(saved);
+                        renderStatus({ status: r.body.status, pocketId: saved.pocketId, inviteLink: r.body.inviteLink });
+                    } else if (r.status === 404 || r.status === 401) {
+                        // Заявка устарела — начинаем заново
+                        clearSaved();
+                        stopPolling();
+                        hide(statusSection);
+                        reveal(idSection);
+                    }
+                })
+                .catch(function () { /* временная потеря связи — попробуем снова */ });
+        }
 
-        brokerLink.addEventListener(
-            "click",
-            function () {
+        function startPolling() {
+            if (pollTimer) return;
+            pollTimer = setInterval(function () {
+                if (document.visibilityState === "visible") checkStatus();
+            }, POLL_MS);
+        }
+        function stopPolling() {
+            clearInterval(pollTimer);
+            pollTimer = null;
+        }
 
+        document.addEventListener("visibilitychange", function () {
+            if (document.visibilityState === "visible" && pollTimer) checkStatus();
+        });
 
-                /*
-                    Реальной проверки регистрации
-                    у брокера здесь нет.
-
-                    После перехода по ссылке
-                    пользователь может продолжить.
-                */
-
-
-                setTimeout(
-                    function () {
-
-
-                        registeredButton.disabled =
-                            false;
-
-
-                        registeredButton
-                            .classList
-                            .remove("locked");
-
-
-                        registrationHint.textContent =
-                            "Если вы завершили регистрацию, нажмите кнопку ниже.";
-
-
-                    },
-                    1000
-                );
-
+        /* ---------- Кнопки ---------- */
+        joinButton.addEventListener("click", function () {
+            var saved = loadSaved();
+            if (saved && saved.token) {
+                renderStatus(saved);
+                reveal(statusSection);
+                checkStatus();
+                return;
             }
-        );
+            reveal(registrationSection);
+        });
 
+        brokerLink.addEventListener("click", function () {
+            // Реальную регистрацию сайт проверить не может — это сделает
+            // администратор на шаге 3. Здесь просто открываем следующую кнопку.
+            setTimeout(function () {
+                registeredButton.disabled = false;
+                registeredButton.classList.remove("is-locked");
+                registrationHint.textContent = "Завершили регистрацию? Нажмите кнопку выше.";
+            }, 1000);
+        });
 
+        registeredButton.addEventListener("click", function () {
+            reveal(idSection);
+            setTimeout(function () { accountId.focus({ preventScroll: true }); }, 450);
+        });
 
-        // =========================================
-        // Я ЗАРЕГИСТРИРОВАЛСЯ
-        // =========================================
+        accountId.addEventListener("input", function () {
+            var clean = accountId.value.replace(/\D/g, "").slice(0, 12);
+            if (clean !== accountId.value) accountId.value = clean;
+            setError("");
+        });
 
-        registeredButton.addEventListener(
-            "click",
-            function () {
+        idForm.addEventListener("submit", function (event) {
+            event.preventDefault();
+            var id = accountId.value.trim();
 
-
-                idSection
-                    .classList
-                    .remove("hidden");
-
-
-                setTimeout(
-                    function () {
-
-                        idSection
-                            .scrollIntoView({
-
-                                behavior:
-                                    "smooth",
-
-                                block:
-                                    "center"
-
-                            });
-
-                    },
-                    100
-                );
-
+            if (!/^\d{5,12}$/.test(id)) {
+                setError(ERRORS.invalid_id);
+                accountId.focus();
+                return;
             }
-        );
-
-
-
-        // =========================================
-        // ПРОВЕРКА ID
-        // =========================================
-
-        idForm.addEventListener(
-            "submit",
-            function (event) {
-
-
-                event.preventDefault();
-
-
-                const id =
-                    accountId
-                        .value
-                        .trim();
-
-
-                if (id === "") {
-
-                    accountId.focus();
-
-                    return;
-
-                }
-
-
-                /*
-                    Сбрасываем предыдущий результат.
-                */
-
-                result
-                    .classList
-                    .add("hidden");
-
-
-                /*
-                    Показываем анимацию проверки.
-                */
-
-                checking
-                    .classList
-                    .remove("hidden");
-
-
-                /*
-                    Никакого реального API здесь нет.
-
-                    Через 3 секунды ВСЕГДА показываем
-                    сообщение о неподтверждённом ID.
-                */
-
-                setTimeout(
-                    function () {
-
-
-                        checking
-                            .classList
-                            .add("hidden");
-
-
-                        result
-                            .classList
-                            .remove("hidden");
-
-
-                        result
-                            .scrollIntoView({
-
-                                behavior:
-                                    "smooth",
-
-                                block:
-                                    "center"
-
-                            });
-
-
-                    },
-                    3000
-                );
-
+            if (!API_URL) {
+                setError(ERRORS.not_configured);
+                return;
             }
-        );
 
+            setError("");
+            setBusy(true);
 
+            api("/api/submit", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ pocketId: id })
+            })
+                .then(function (r) {
+                    if (r.ok && r.body.token) {
+                        save({ token: r.body.token, pocketId: id, status: "pending" });
+                        renderStatus({ status: "pending", pocketId: id });
+                        reveal(statusSection);
+                        showToast("Заявка отправлена администратору ✓");
+                    } else {
+                        setError(ERRORS[r.body.error] || ERRORS.telegram_unavailable);
+                    }
+                })
+                .catch(function () { setError(ERRORS.network); })
+                .then(function () { setBusy(false); });
+        });
+
+        retryButton.addEventListener("click", function () {
+            clearSaved();
+            accountId.value = "";
+            hide(statusSection);
+            reveal(idSection);
+            setTimeout(function () { accountId.focus({ preventScroll: true }); }, 450);
+        });
+
+        /* ---------- Возврат на сайт: показываем сохранённый статус ---------- */
+        var saved = loadSaved();
+        if (saved && saved.token) {
+            renderStatus(saved);
+            checkStatus();
+        }
+    })();
     </script>
-
 </body>
 </html>
