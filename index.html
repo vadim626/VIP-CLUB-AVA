@@ -581,6 +581,67 @@
         .hidden { display: none !important; }
 
         /* =========================================================
+           РЕЖИМ ПРИЛОЖЕНИЯ (после одобрения)
+           ========================================================= */
+        .hero-teaser {
+            position: relative; margin: -6px 0 16px; padding: 10px 12px; border-radius: 14px;
+            background: rgba(160, 32, 255, 0.08); border: 1px solid var(--line-strong);
+            color: #dcb8ff; font-size: 13px; line-height: 1.4;
+        }
+        .step > .back { margin: -10px 0 6px -6px; }
+
+        .appbar {
+            position: sticky; top: 0; z-index: 20;
+            padding: calc(env(safe-area-inset-top) + 10px) 16px 10px;
+            background: rgba(7, 4, 16, 0.78);
+            -webkit-backdrop-filter: saturate(160%) blur(18px); backdrop-filter: saturate(160%) blur(18px);
+            border-bottom: 1px solid var(--line);
+        }
+        .appbar-in { width: min(560px, 100%); margin: 0 auto; display: flex; align-items: center; gap: 8px; }
+        .appbar-logo { color: #ffcf32; font-size: 20px; }
+        .appbar-name { font-weight: 800; letter-spacing: 0.04em; }
+        .appbar-vip { margin-left: auto; padding: 4px 10px; border-radius: 999px; font-size: 11.5px; font-weight: 800; letter-spacing: 0.12em;
+            color: #ffcf32; border: 1px solid rgba(255, 207, 50, 0.45); background: rgba(255, 207, 50, 0.08); }
+
+        body.app .wrap { padding-top: 14px; padding-bottom: calc(env(safe-area-inset-bottom) + 96px); }
+        body.app footer { display: none; }
+        body.app #statusSection { padding: 18px 18px 18px; }
+        body.app #statusSection .progress, body.app #stateApproved .eyebrow { display: none; }
+        body.app #stateApproved h2 { font-size: 21px; }
+        body.app #stateApproved .status-icon { width: 56px; height: 56px; font-size: 26px; margin-bottom: 10px; }
+        body.app .card { animation: none; }
+
+        .tabbar {
+            position: fixed; left: 0; right: 0; bottom: 0; z-index: 30;
+            display: grid; grid-template-columns: repeat(4, 1fr);
+            padding: 6px max(8px, env(safe-area-inset-left)) calc(env(safe-area-inset-bottom) + 6px);
+            background: rgba(10, 6, 20, 0.86);
+            -webkit-backdrop-filter: saturate(160%) blur(20px); backdrop-filter: saturate(160%) blur(20px);
+            border-top: 1px solid var(--line);
+        }
+        .tabbar button {
+            display: flex; flex-direction: column; align-items: center; gap: 3px; padding: 6px 0 4px; min-height: 52px;
+            background: none; border: 0; color: rgba(235, 225, 255, 0.45); font: inherit; font-size: 11px; font-weight: 600; cursor: pointer;
+            transition: color .2s;
+        }
+        .tabbar svg { width: 25px; height: 25px; transition: transform .25s var(--ease); }
+        .tabbar button.on { color: #d28bff; }
+        .tabbar button.on svg { transform: translateY(-1px) scale(1.06); }
+        .tabbar button:active svg { transform: scale(0.9); }
+
+        .home-hi { margin-top: 4px; font-size: 28px; font-weight: 800; letter-spacing: -0.02em; }
+        .profile-head { display: flex; align-items: center; gap: 14px; }
+        .profile-head h2 { font-size: 22px; font-weight: 760; }
+        .avatar { width: 62px; height: 62px; border-radius: 20px; display: grid; place-items: center; font-size: 26px; font-weight: 800;
+            background: linear-gradient(145deg, #a020ff, #5b16c9); box-shadow: 0 10px 30px var(--violet-glow); }
+        .profile-badge { display: inline-block; margin-top: 4px; padding: 3px 9px; border-radius: 999px; font-size: 12px; font-weight: 700;
+            color: #5ee07f; background: rgba(48, 209, 88, 0.12); }
+        .progress-line { height: 6px; margin: 12px 0 16px; border-radius: 6px; background: rgba(255,255,255,0.08); overflow: hidden; }
+        .progress-line i { display: block; height: 100%; width: 0; border-radius: 6px; background: linear-gradient(90deg, #b000ff, #6a00ff); transition: width .6s var(--ease); }
+        .screen-in { animation: screenIn .35s var(--ease) both; }
+        @keyframes screenIn { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: none; } }
+
+        /* =========================================================
            TRADING ACADEMY
            ========================================================= */
         .academy { padding: 22px 16px 18px; animation: rise 0.55s var(--ease) both; }
@@ -767,12 +828,20 @@
 <body>
     <div class="aura" aria-hidden="true"></div>
 
+    <header class="appbar hidden" id="appBar">
+        <div class="appbar-in">
+            <span class="appbar-logo">♛</span>
+            <span class="appbar-name">AVA TRADE</span>
+            <span class="appbar-vip">VIP</span>
+        </div>
+    </header>
+
     <main class="wrap">
 
         <!-- =====================================================
              ГЛАВНЫЙ ЭКРАН
              ===================================================== -->
-        <section class="card hero">
+        <section class="card hero" id="heroSection">
             <div class="pill"><span class="dot"></span>AVA TRADE</div>
             <div class="crown" aria-hidden="true">♛</div>
             <h1 class="brand">AVA<span>TRADE</span></h1>
@@ -805,6 +874,8 @@
                 </div>
             </div>
 
+            <div class="hero-teaser">🎓 19 уроков · 🏆 Турнир · ⚔️ Дуэли — откроются после подтверждения ID</div>
+
             <button class="btn btn-primary" id="joinButton" type="button">
                 Вступить в VIP <span class="arrow">→</span>
             </button>
@@ -816,6 +887,7 @@
              ШАГ 1 — РЕГИСТРАЦИЯ
              ===================================================== -->
         <section class="card step hidden" id="registrationSection">
+            <button class="back js-back" data-to="heroSection" type="button">‹ Назад</button>
             <div class="progress" aria-hidden="true"><i class="on"></i><i></i><i></i></div>
             <div class="eyebrow">Шаг 1 из 3</div>
             <h2>Пройдите регистрацию</h2>
@@ -841,6 +913,7 @@
              ШАГ 2 — ВВОД ID
              ===================================================== -->
         <section class="card step hidden" id="idSection">
+            <button class="back js-back" data-to="registrationSection" type="button">‹ Назад</button>
             <div class="progress" aria-hidden="true"><i class="on"></i><i class="on"></i><i></i></div>
             <div class="eyebrow">Шаг 2 из 3</div>
             <h2>Введите ID аккаунта</h2>
@@ -933,6 +1006,14 @@
                 <div class="notice" id="inviteNote"></div>
             </div>
 
+            <!-- Доступ закрыт администратором -->
+            <div class="status is-rejected hidden" id="stateBlocked">
+                <div class="status-icon">🚫</div>
+                <h2>Доступ закрыт</h2>
+                <p class="step-text">Администратор закрыл доступ к клубу для этого аккаунта. Если это ошибка — напишите администратору.</p>
+                <a class="btn btn-primary" href="https://t.me/m/6nZG9TLfMjIy" target="_blank" rel="noopener noreferrer">Написать администратору</a>
+            </div>
+
             <!-- Отклонено -->
             <div class="status is-rejected hidden" id="stateRejected">
                 <div class="status-icon">!</div>
@@ -953,6 +1034,59 @@
              TRADING ACADEMY
              Уроки загружаются с сервера только после одобрения ID.
              ===================================================== -->
+        <!-- =====================================================
+             ГЛАВНАЯ (приложение)
+             ===================================================== -->
+        <section class="card academy hidden" id="homeSection">
+            <div class="eyebrow">Добро пожаловать</div>
+            <h2 class="home-hi" id="homeHi">Привет! 👋</h2>
+            <p class="academy-sub" id="homeSub">Твой VIP-доступ активен.</p>
+            <div class="club-tiles">
+                <button class="club-tile" type="button" id="homeContinue">
+                    <span class="club-ico" style="background:linear-gradient(145deg,#a020ff,#5b16c9)">🎓</span>
+                    <b id="homeLessonTitle">Продолжить обучение</b>
+                    <span id="homeLessonSub">Trading Academy · 19 уроков</span>
+                </button>
+                <button class="club-tile" type="button" data-go="check">
+                    <span class="club-ico" style="background:linear-gradient(145deg,#2bb673,#16784a)">🧠</span>
+                    <b>Проверка дня</b>
+                    <span>Можно ли мне сегодня торговать?</span>
+                </button>
+                <button class="club-tile" type="button" data-go="tour">
+                    <span class="club-ico" style="background:linear-gradient(145deg,#f5b83d,#b7741b)">🏆</span>
+                    <b>Турнир недели</b>
+                    <span>Один график на всех · таблица лидеров</span>
+                </button>
+                <button class="club-tile" type="button" data-go="duel">
+                    <span class="club-ico" style="background:linear-gradient(145deg,#b45cff,#5b16c9)">⚔️</span>
+                    <b>Дуэль 1 на 1</b>
+                    <span>Вызови друга — кто угадает больше?</span>
+                </button>
+            </div>
+        </section>
+
+        <!-- =====================================================
+             ПРОФИЛЬ (приложение)
+             ===================================================== -->
+        <section class="card academy hidden" id="profileSection">
+            <div class="profile-head">
+                <div class="avatar" id="profileAvatar">A</div>
+                <div>
+                    <h2 id="profileName">Участник AVA</h2>
+                    <div class="profile-badge">✓ VIP-доступ активен</div>
+                </div>
+            </div>
+            <ul class="lb" style="margin-top:16px">
+                <li><span class="nm">Pocket Option ID</span><span class="bl js-id"></span></li>
+                <li><span class="nm">Telegram</span><span class="bl" id="profileTg">—</span></li>
+                <li><span class="nm">Уроков пройдено</span><span class="bl" id="profileLessons">0 / 19</span></li>
+            </ul>
+            <div class="progress-line"><i id="profileBar"></i></div>
+            <a class="btn btn-secondary" href="https://t.me/m/6nZG9TLfMjIy" target="_blank" rel="noopener noreferrer">💬 Написать администратору</a>
+            <button class="btn btn-secondary" id="logoutButton" type="button">Выйти на этом устройстве</button>
+            <p class="muted" style="margin-top:12px">Чтобы войти снова, введите свой ID и подтвердите тот же Telegram — доступ откроется сразу.</p>
+        </section>
+
         <!-- =====================================================
              AVA CLUB — только для одобренных участников
              ===================================================== -->
@@ -994,7 +1128,7 @@
             </div>
         </section>
 
-        <section class="card academy" id="academySection">
+        <section class="card academy hidden" id="academySection">
             <div id="academyList">
                 <div class="academy-head">
                     <div>
@@ -1026,6 +1160,13 @@
             <a href="https://t.me/m/6nZG9TLfMjIy" target="_blank" rel="noopener noreferrer">Администратор</a>
         </footer>
     </main>
+
+    <nav class="tabbar hidden" id="tabBar" aria-label="Разделы">
+        <button type="button" data-tab="home"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 10.5 12 3l9 7.5V20a1 1 0 0 1-1 1h-5v-6H9v6H4a1 1 0 0 1-1-1z"/></svg><span>Главная</span></button>
+        <button type="button" data-tab="academy"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M2 8.5 12 4l10 4.5-10 4.5z"/><path d="M6 10.5V16c0 1.5 2.7 3 6 3s6-1.5 6-3v-5.5"/></svg><span>Академия</span></button>
+        <button type="button" data-tab="club"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M7 4h10v4a5 5 0 0 1-10 0z"/><path d="M7 6H4a3 3 0 0 0 3 4M17 6h3a3 3 0 0 1-3 4M12 13v4M8 21h8M9 17h6"/></svg><span>Клуб</span></button>
+        <button type="button" data-tab="profile"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="8" r="4"/><path d="M4 21c1.5-4 4.5-6 8-6s6.5 2 8 6"/></svg><span>Профиль</span></button>
+    </nav>
 
     <div class="toast" id="toast" role="status"></div>
 
@@ -1081,10 +1222,15 @@
         /* ---------- Вспомогательное ---------- */
         function show(el) { el.classList.remove("hidden"); }
         function hide(el) { el.classList.add("hidden"); }
-        function reveal(el) {
+        // Шаги регистрации — отдельные экраны, по одному за раз (без длинной прокрутки)
+        var STEP_IDS = ["heroSection", "registrationSection", "idSection", "statusSection"];
+        function goStep(el) {
+            STEP_IDS.forEach(function (id) { if ($(id) !== el) hide($(id)); });
             show(el);
-            setTimeout(function () { el.scrollIntoView({ behavior: "smooth", block: "center" }); }, 80);
+            el.classList.remove("screen-in"); void el.offsetWidth; el.classList.add("screen-in");
+            window.scrollTo({ top: 0, behavior: "smooth" });
         }
+        function reveal(el) { goStep(el); }
         function showToast(text) {
             toast.textContent = text;
             toast.classList.add("show");
@@ -1112,12 +1258,15 @@
         /* ---------- Отображение статуса ---------- */
         function renderStatus(data) {
             hide(idSection);
+            hide($("heroSection"));
+            hide(registrationSection);
             show(statusSection);
-            ["stateTelegram", "stateDeposit", "statePending", "stateApproved", "stateRejected"].forEach(function (id) { hide($(id)); });
+            ["stateTelegram", "stateDeposit", "statePending", "stateApproved", "stateRejected", "stateBlocked"].forEach(function (id) { hide($(id)); });
 
             Array.prototype.forEach.call(document.querySelectorAll(".js-id"), function (el) {
                 el.textContent = data.pocketId || "";
             });
+            if (data.status !== "approved") leaveApp();
 
             if (data.status === "approved") {
                 if (data.inviteLink) {
@@ -1132,8 +1281,10 @@
                 }
                 show($("stateApproved"));
                 stopPolling();
-                loadAcademy();
-                showClub();
+                enterApp(data);
+            } else if (data.status === "blocked") {
+                show($("stateBlocked"));
+                stopPolling();
             } else if (data.status === "rejected") {
                 show($("stateRejected"));
                 stopPolling();
@@ -1177,6 +1328,7 @@
                         saved.pocketId = r.body.pocketId || saved.pocketId;
                         saved.inviteLink = r.body.inviteLink || null;
                         if (r.body.telegramLink) saved.telegramLink = r.body.telegramLink;
+                        if (r.body.telegram) saved.telegram = r.body.telegram;
                         if (r.body.minDeposit) saved.minDeposit = r.body.minDeposit;
                         save(saved);
                         renderStatus(saved);
@@ -1302,6 +1454,10 @@
                 .then(function () { btn.disabled = false; });
         });
 
+        Array.prototype.forEach.call(document.querySelectorAll(".js-back"), function (b) {
+            b.addEventListener("click", function () { goStep($(b.getAttribute("data-to"))); });
+        });
+
         retryButton.addEventListener("click", function () {
             clearSaved();
             accountId.value = "";
@@ -1336,6 +1492,7 @@
         ];
         var DONE_KEY = "ava_academy_done";
         var lessons = null;
+        var pendingLesson = null;
         var academyLoading = false;
 
         var academySection = $("academySection");
@@ -1406,6 +1563,7 @@
                 .then(function (r) {
                     if (r.ok && r.body.lessons) {
                         lessons = r.body.lessons;
+                        if (pendingLesson !== null && currentTab === "academy") { var pl = pendingLesson; pendingLesson = null; setTimeout(function () { openLesson(pl); }, 0); }
                         $("academySub").textContent = "Доступ открыт. Проходите уроки по порядку — в конце каждого короткий тест.";
                         renderLessonList();
                     }
@@ -1870,14 +2028,16 @@
         function money(v) { return "$" + Number(v).toLocaleString("ru-RU", { minimumFractionDigits: 0, maximumFractionDigits: 2 }); }
         function stopClubTimer() { clearTimeout(clubTimer); clubTimer = null; }
 
+        // Ссылка-приглашение на дуэль (?duel=...) — сразу открываем её в разделе «Клуб»
         function showClub() {
-            show(clubSection);
             var m = /[?&]duel=([0-9a-f]{12})/.exec(location.search);
             if (m && !showClub.handled) {
                 showClub.handled = true;
+                switchTab("club");
                 openClub("duel", m[1]);
-                setTimeout(function () { clubSection.scrollIntoView({ behavior: "smooth", block: "start" }); }, 300);
+                return true;
             }
+            return false;
         }
 
         function openClub(kind, arg) {
@@ -1896,7 +2056,7 @@
         Array.prototype.forEach.call(document.querySelectorAll(".club-tile"), function (b) {
             b.addEventListener("click", function () {
                 openClub(b.getAttribute("data-open"));
-                clubSection.scrollIntoView({ behavior: "smooth", block: "start" });
+                window.scrollTo({ top: 0, behavior: "smooth" });
             });
         });
         $("clubBack").addEventListener("click", function () {
@@ -2102,6 +2262,122 @@
                 clubTimer = setTimeout(function () { if (clubOpen === "duel") openDuel(d.id); }, 6000);
             }
         }
+
+        /* =====================================================
+           ПРИЛОЖЕНИЕ: нижнее меню и экраны
+           ===================================================== */
+        var TABS = {
+            home: ["homeSection", "statusSection"],
+            academy: ["academySection"],
+            club: ["clubSection"],
+            profile: ["profileSection"]
+        };
+        var ALL_SCREENS = ["statusSection", "homeSection", "academySection", "clubSection", "profileSection"];
+        var currentTab = null;
+        var appData = null;
+
+        function enterApp(data) {
+            appData = data;
+            var first = !document.body.classList.contains("app");
+            document.body.classList.add("app");
+            // на главной приветствие идёт первым, кнопка VIP-чата — под ним
+            var home = $("homeSection");
+            if (home.nextElementSibling !== statusSection) statusSection.parentNode.insertBefore(home, statusSection);
+            ["heroSection", "registrationSection", "idSection"].forEach(function (id) { hide($(id)); });
+            show($("appBar"));
+            show($("tabBar"));
+            fillHome();
+            if (first) {
+                if (!showClub()) {
+                    var h = (location.hash || "").replace("#", "");
+                    switchTab(TABS[h] ? h : "home");
+                }
+            } else if (currentTab) {
+                switchTab(currentTab, true);
+            }
+        }
+
+        function leaveApp() {
+            if (!document.body.classList.contains("app")) return;
+            document.body.classList.remove("app");
+            hide($("appBar"));
+            hide($("tabBar"));
+            ["homeSection", "academySection", "clubSection", "profileSection"].forEach(function (id) { hide($(id)); });
+            stopClubTimer();
+            currentTab = null;
+        }
+
+        function switchTab(name, keepScroll) {
+            if (currentTab === "club" && name !== "club") stopClubTimer(); // турнир не грузит сеть в фоне
+            currentTab = name;
+            ALL_SCREENS.forEach(function (id) { if (TABS[name].indexOf(id) === -1) hide($(id)); });
+            TABS[name].forEach(function (id) {
+                var el = $(id);
+                show(el);
+                el.classList.remove("screen-in"); void el.offsetWidth; el.classList.add("screen-in");
+            });
+            Array.prototype.forEach.call(document.querySelectorAll(".tabbar button"), function (b) {
+                b.classList.toggle("on", b.getAttribute("data-tab") === name);
+            });
+            if (name === "academy") { loadAcademy(); renderLessonList(); }
+            if (name === "home") fillHome();
+            if (name === "profile") fillProfile();
+            if (name === "club" && clubOpen === "tour") loadTour();
+            try { history.replaceState(null, "", location.pathname + location.search + "#" + name); } catch (e) {}
+            if (!keepScroll) window.scrollTo(0, 0);
+        }
+
+        Array.prototype.forEach.call(document.querySelectorAll(".tabbar button"), function (b) {
+            b.addEventListener("click", function () { switchTab(b.getAttribute("data-tab")); });
+        });
+
+        function nextLessonIndex() {
+            var done = getDone();
+            for (var i = 0; i < LESSON_TITLES.length; i++) if (done.indexOf(LESSON_TITLES[i][0]) === -1) return i;
+            return -1;
+        }
+
+        function fillHome() {
+            var who = appData && appData.telegram ? appData.telegram : "";
+            $("homeHi").textContent = "Привет" + (who ? ", " + who : "") + "! 👋";
+            $("homeSub").textContent = "VIP-доступ активен · ID " + ((appData && appData.pocketId) || "");
+            var i = nextLessonIndex();
+            var done = getDone().length;
+            if (i === -1) {
+                $("homeLessonTitle").textContent = "Академия пройдена 🎉";
+                $("homeLessonSub").textContent = "Все " + LESSON_TITLES.length + " уроков · можно повторить в любой момент";
+            } else {
+                $("homeLessonTitle").textContent = (done ? "Продолжить: " : "Начать: ") + LESSON_TITLES[i][2];
+                $("homeLessonSub").textContent = "Урок " + (i + 1) + " из " + LESSON_TITLES.length + " · " + LESSON_TITLES[i][3] + " мин";
+            }
+        }
+
+        function fillProfile() {
+            var tg = appData && appData.telegram;
+            $("profileName").textContent = tg || "Участник AVA";
+            $("profileAvatar").textContent = (tg ? tg.replace("@", "") : "A").charAt(0).toUpperCase();
+            $("profileTg").textContent = tg || "—";
+            var done = getDone().length;
+            $("profileLessons").textContent = done + " / " + LESSON_TITLES.length;
+            $("profileBar").style.width = Math.round(done / LESSON_TITLES.length * 100) + "%";
+        }
+
+        $("homeContinue").addEventListener("click", function () {
+            var i = nextLessonIndex();
+            switchTab("academy");
+            if (i === -1) return;
+            pendingLesson = i;
+            if (lessons) { openLesson(i); pendingLesson = null; }
+        });
+        Array.prototype.forEach.call(document.querySelectorAll("#homeSection [data-go]"), function (b) {
+            b.addEventListener("click", function () { switchTab("club"); openClub(b.getAttribute("data-go")); });
+        });
+        $("logoutButton").addEventListener("click", function () {
+            if (!confirm("Выйти на этом устройстве? Чтобы войти снова, нужно будет ввести ID и подтвердить Telegram.")) return;
+            clearSaved();
+            try { localStorage.removeItem("ava_duel"); } catch (e) {}
+            location.href = location.pathname;
+        });
 
         /* ---------- Возврат на сайт: показываем сохранённый статус ---------- */
         var saved = loadSaved();
