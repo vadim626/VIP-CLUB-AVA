@@ -95,6 +95,19 @@ assert.equal(s.inviteLink, "https://t.me/+ONE_TIME");
 const inviteCall = calls.filter((c) => c.method === "createChatInviteLink").pop();
 assert.equal(inviteCall.body.member_limit, 1);
 
+assert.ok(inviteCall.body.expire_date > Date.now() / 1000 + 6 * 86400);
+
+// 8b. Ссылка истекла → при возврате на сайт выдаётся новая
+const rec = JSON.parse(store.get("req:" + reqId));
+rec.inviteExpiresAt = 1;
+store.set("req:" + reqId, JSON.stringify(rec));
+const before = calls.filter((c) => c.method === "createChatInviteLink").length;
+s = await (await status(token)).json();
+assert.equal(s.status, "approved");
+assert.ok(s.inviteLink);
+assert.equal(calls.filter((c) => c.method === "createChatInviteLink").length, before + 1);
+assert.ok(JSON.parse(store.get("req:" + reqId)).inviteExpiresAt > 1);
+
 // 9. Повторное нажатие ничего не меняет
 await press("r:" + reqId);
 assert.equal((await (await status(token)).json()).status, "approved");
@@ -124,4 +137,4 @@ const bare = await worker.fetch(
   new Request("https://w.dev/api/submit", { method: "POST", body: "{}" }), { AVA_KV: KV });
 assert.equal(bare.status, 503);
 
-console.log("Все 13 проверок пройдены ✅");
+console.log("Все 14 проверок пройдены ✅");

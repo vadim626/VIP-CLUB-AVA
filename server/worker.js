@@ -30,6 +30,7 @@ const REQUEST_TTL = 60 * 60 * 24 * 60; // заявки хранятся 60 дн�
 const RATE_LIMIT_MAX = 5;               // не больше 5 заявок…
 const RATE_LIMIT_WINDOW = 60 * 60;      // …в час с одного IP
 const ID_PATTERN = /^\d{5,12}$/;        // Pocket Option ID — только цифры
+const INVITE_TTL = 60 * 60 * 24 * 7;    // одноразовая ссылка действует 7 дней
 
 export default {
   async fetch(request, env) {
@@ -145,9 +146,24 @@ async function handleStatus(request, env, cors) {
     return json({ error: "not_found" }, 404, cors);
   }
 
+  // Если одобренный человек вернулся после истечения ссылки —
+  // выдаём ему новую одноразовую ссылку (старая уже не работает).
+  if (record.status === "approved" && record.inviteExpiresAt && nowSec() > record.inviteExpiresAt) {
+    const link = await createInvite(env, record.pocketId);
+    if (link.ok) {
+      record.inviteLink = link.result.invite_link;
+      record.inviteExpiresAt = link.expiresAt;
+      await saveRequest(env, record);
+    } else {
+      console.error("re-createChatInviteLink failed", link.description);
+      record.inviteLink = null;
+    }
+  }
+
   const out = { status: record.status, pocketId: record.pocketId };
   if (record.status === "approved" && record.inviteLink) {
     out.inviteLink = record.inviteLink;
+    out.inviteExpiresAt = record.inviteExpiresAt || null;
   }
   return json(out, 200, cors);
 }
@@ -207,11 +223,7 @@ async function handleWebhook(request, env) {
 
   if (action === "a") {
     // Одноразовая ссылка: по ней сможет вступить только 1 человек.
-    const link = await telegram(env, "createChatInviteLink", {
-      chat_id: env.CHANNEL_ID,
-      name: ("ID " + record.pocketId).slice(0, 32),
-      member_limit: 1,
-    });
+    const link = await createInvite(env, record.pocketId);
     if (!link.ok) {
       console.error("createChatInviteLink failed", link.description);
       await answer(
@@ -224,6 +236,7 @@ async function handleWebhook(request, env) {
     }
     record.status = "approved";
     record.inviteLink = link.result.invite_link;
+    record.inviteExpiresAt = link.expiresAt;
   } else {
     record.status = "rejected";
   }
@@ -289,6 +302,23 @@ async function telegram(env, method, payload) {
   } catch (err) {
     return { ok: false, description: String(err) };
   }
+}
+
+// Персональная ссылка: вступить может 1 человек, срок — 7 дней.
+async function createInvite(env, pocketId) {
+  const expiresAt = nowSec() + INVITE_TTL;
+  const res = await telegram(env, "createChatInviteLink", {
+    chat_id: env.CHANNEL_ID,
+    name: ("ID " + pocketId).slice(0, 32),
+    member_limit: 1,
+    expire_date: expiresAt,
+  });
+  res.expiresAt = expiresAt;
+  return res;
+}
+
+function nowSec() {
+  return Math.floor(Date.now() / 1000);
 }
 
 function answer(env, callbackId, text, alert = false) {
