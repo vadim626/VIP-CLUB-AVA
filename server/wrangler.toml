@@ -1,6 +1,8 @@
 # Настройки сервера AVA TRADE для Cloudflare Workers.
-# Секреты (токен бота и т.д.) сюда НЕ пишутся — они задаются
-# в панели Cloudflare: Settings → Variables and Secrets.
+# Cloudflare сам берёт код из GitHub (ветка feature/id-verification, папка server).
+#
+# Секреты (BOT_TOKEN, WEBHOOK_SECRET, ADMIN_CHAT_ID, CHANNEL_ID) сюда НЕ пишутся —
+# они задаются в панели Cloudflare: Settings → Variables and Secrets (тип Secret).
 
 name = "ava-trade-verify"
 main = "worker.js"
@@ -10,7 +12,7 @@ compatibility_date = "2026-11-01"
 # Адрес вашего сайта (без слэша в конце). Можно несколько через запятую.
 ALLOWED_ORIGIN = "https://vadim626.github.io"
 
-[[kv_namespaces]]
-binding = "AVA_KV"
-# Замените на ID вашего KV-хранилища из панели Cloudflare.
-id = "REPLACE_WITH_YOUR_KV_NAMESPACE_ID"
+# Хранилище заявок подключится, когда будет создано KV-пространство:
+# [[kv_namespaces]]
+# binding = "AVA_KV"
+# id = "..."
