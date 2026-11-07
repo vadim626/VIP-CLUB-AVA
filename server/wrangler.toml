@@ -10,7 +10,7 @@ compatibility_date = "2026-11-01"
 
 [vars]
 # Адрес вашего сайта (без слэша в конце). Можно несколько через запятую.
-ALLOWED_ORIGIN = "https://vadim626.github.io"
+ALLOWED_ORIGIN = "https://vip-club-ava.vercel.app,https://vip-club-ava-*.vercel.app"
 
 # Хранилище заявок подключится, когда будет создано KV-пространство:
 # [[kv_namespaces]]

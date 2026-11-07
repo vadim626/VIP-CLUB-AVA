@@ -367,16 +367,26 @@ function allowedOrigins(env) {
     .filter(Boolean);
 }
 
+// Поддерживает шаблоны со звёздочкой, например https://vip-club-ava-*.vercel.app
+// (тестовые версии сайта на Vercel).
+function originMatches(origin, list) {
+  return list.some((entry) => {
+    if (!entry.includes("*")) return entry === origin;
+    const re = new RegExp("^" + entry.split("*").map((p) => p.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")).join("[a-z0-9-]+") + "$");
+    return re.test(origin);
+  });
+}
+
 function isAllowedOrigin(request, env) {
   const list = allowedOrigins(env);
   if (list.length === 0) return true; // не настроено — пускаем (удобно для теста)
-  return list.includes(request.headers.get("Origin") || "");
+  return originMatches(request.headers.get("Origin") || "", list);
 }
 
 function corsHeaders(request, env) {
   const origin = request.headers.get("Origin") || "";
   const list = allowedOrigins(env);
-  const allow = list.length === 0 ? "*" : list.includes(origin) ? origin : list[0];
+  const allow = list.length === 0 ? "*" : originMatches(origin, list) ? origin : list[0];
   return {
     "Access-Control-Allow-Origin": allow,
     "Access-Control-Allow-Methods": "GET, POST, OPTIONS",
