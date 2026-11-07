@@ -4,7 +4,7 @@
 # Секреты (BOT_TOKEN, WEBHOOK_SECRET, ADMIN_CHAT_ID, CHANNEL_ID) сюда НЕ пишутся —
 # они задаются в панели Cloudflare: Settings → Variables and Secrets (тип Secret).
 
-name = "ava-trade-verify"
+name = "blue-moon-2662ava-trade-verify"
 main = "worker.js"
 compatibility_date = "2026-11-01"
 
