@@ -7,10 +7,11 @@
 name = "blue-moon-2662ava-trade-verify"
 main = "worker.js"
 
+compatibility_date = "2026-11-01"
+
 # Сам сайт тоже открывается с этого адреса (папку public собирает GitHub Actions из index.html)
 [assets]
 directory = "./public"
-compatibility_date = "2026-11-01"
 
 [vars]
 # Адрес вашего сайта (без слэша в конце). Можно несколько через запятую.
