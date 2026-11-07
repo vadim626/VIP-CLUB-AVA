@@ -1,4 +1,4 @@
-# Автоматически загружает сервер проверки ID в Cloudflare
+# Автоматически загружает сервер проверки ID в Cloudflare (Cloudflare Workers)
 # при каждом изменении папки server в ветке feature/id-verification.
 # Ключ доступа хранится в GitHub: Settings → Secrets → CLOUDFLARE_API_TOKEN.
 name: Deploy server to Cloudflare
