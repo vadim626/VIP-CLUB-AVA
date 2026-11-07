@@ -30,6 +30,10 @@ jobs:
         if: steps.check.outputs.skip != '1'
         run: node server/test.mjs && node server/test-setup.mjs
 
+      - name: Подготовить сайт
+        if: steps.check.outputs.skip != '1'
+        run: mkdir -p server/public && cp index.html server/public/index.html
+
       - name: Загрузить в Cloudflare
         id: deploy
         if: steps.check.outputs.skip != '1'
@@ -39,6 +43,15 @@ jobs:
           apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
           accountId: 56c76013a2d53616935e201b3e8bafe8
           workingDirectory: server
+
+      - name: Проверить, что сайт открывается
+        if: steps.check.outputs.skip != '1'
+        run: |
+          sleep 10
+          U=https://blue-moon-2662ava-trade-verify.prohavadim9.workers.dev
+          curl -fsS "$U/" | grep -q "Trading Academy" && echo "::notice::Сайт открывается: $U"
+          curl -fsS "$U/api/health" | tee /tmp/h.json
+          echo "::notice::health $(cat /tmp/h.json)"
 
       - name: Показать причину ошибки
         if: failure() && steps.deploy.outcome == 'failure'
