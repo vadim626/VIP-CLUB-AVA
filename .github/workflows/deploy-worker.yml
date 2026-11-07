@@ -28,7 +28,7 @@ jobs:
 
       - name: Тесты сервера
         if: steps.check.outputs.skip != '1'
-        run: node server/test.mjs && node server/test-setup.mjs && node server/test-club.mjs
+        run: node server/test.mjs && node server/test-setup.mjs && node server/test-club.mjs && node server/test-members.mjs
 
       - name: Подготовить сайт
         if: steps.check.outputs.skip != '1'

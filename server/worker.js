@@ -117,6 +117,9 @@ async function handleSubmit(request, env, cors) {
   if (!ID_PATTERN.test(pocketId)) {
     return json({ error: "invalid_id" }, 400, cors);
   }
+  if (await env.AVA_KV.get("blk:p:" + pocketId)) {
+    return json({ error: "blocked" }, 403, cors);
+  }
 
   // Ограничение частоты: защищает вас от спама заявками.
   const ip = request.headers.get("CF-Connecting-IP") || "unknown";
@@ -193,6 +196,7 @@ async function handleClub(request, env, cors, url) {
   const found = await findByToken(request, env);
   if (found.error) return json({ error: found.error }, found.code, cors);
   const record = found.record;
+  if (await isBlocked(env, record)) return json({ error: "blocked" }, 403, cors);
   if (record.status !== "approved") return json({ error: "not_approved" }, 403, cors);
 
   const parts = url.pathname.split("/").slice(3); // /api/club/<что>/...
@@ -213,6 +217,7 @@ async function handleClub(request, env, cors, url) {
 async function handleAcademy(request, env, cors) {
   const found = await findByToken(request, env);
   if (found.error) return json({ error: found.error }, found.code, cors);
+  if (await isBlocked(env, found.record)) return json({ error: "blocked" }, 403, cors);
   if (found.record.status !== "approved") return json({ error: "not_approved" }, 403, cors);
   return json({ lessons: academyLessons() }, 200, cors);
 }
@@ -221,6 +226,10 @@ async function handleStatus(request, env, cors) {
   const found = await findByToken(request, env);
   if (found.error) return json({ error: found.error }, found.code, cors);
   const record = found.record;
+  if (await isBlocked(env, record)) {
+    return json({ status: "blocked", pocketId: record.pocketId }, 200, cors);
+  }
+  if (record.status === "approved") await indexMember(env, record); // старые участники попадают в список
 
   // Если одобренный человек вернулся после истечения ссылки —
   // выдаём ему новую одноразовую ссылку (старая уже не работает).
@@ -336,6 +345,13 @@ async function handleWebhook(request, env) {
     return new Response("ok");
   }
 
+  // Управление участниками: список, карточка, блокировка
+  const mm = /^(ml|m|b|u):(\d{1,12})$/.exec(cb.data || "");
+  if (mm) {
+    await memberAction(env, cb, mm[1], mm[2]);
+    return new Response("ok");
+  }
+
   const match = /^(a|r|n):([0-9a-f]{16})$/.exec(cb.data || "");
   if (!match) {
     await answer(env, cb.id, "Неизвестная команда");
@@ -379,6 +395,7 @@ async function handleWebhook(request, env) {
   await saveRequest(env, record);
   if (record.status === "approved") {
     await env.AVA_KV.put("apr:" + record.pocketId, record.reqId, { expirationTtl: REQUEST_TTL });
+    await indexMember(env, record);
   }
 
   await telegram(env, "editMessageText", {
@@ -390,6 +407,178 @@ async function handleWebhook(request, env) {
   await notifyMember(env, record);
   await answer(env, cb.id, { approved: "Одобрено ✅", rejected: "Отклонено ❌", needs_deposit: "Отмечено: не пополнен 💰" }[record.status]);
   return new Response("ok");
+}
+
+/* ---------- Участники: список, поиск, блокировка ---------- */
+
+const MEMBERS_KEY = "idx:members";
+const PAGE = 8;
+
+async function loadMembers(env) {
+  const raw = await env.AVA_KV.get(MEMBERS_KEY);
+  return raw ? JSON.parse(raw) : {};
+}
+
+// Добавляет/обновляет участника в списке (по Pocket Option ID).
+async function indexMember(env, record) {
+  const all = await loadMembers(env);
+  const prev = all[record.pocketId];
+  const entry = {
+    r: record.reqId,
+    t: record.tg ? record.tg.id : (prev && prev.t) || null,
+    u: record.tg ? record.tg.username : (prev && prev.u) || null,
+    n: record.tg ? record.tg.name : (prev && prev.n) || "",
+    at: (prev && prev.at) || record.decidedAt || record.createdAt,
+    b: Boolean(prev && prev.b),
+  };
+  if (prev && JSON.stringify(prev) === JSON.stringify(entry)) return;
+  all[record.pocketId] = entry;
+  await env.AVA_KV.put(MEMBERS_KEY, JSON.stringify(all));
+}
+
+async function isBlocked(env, record) {
+  if (await env.AVA_KV.get("blk:p:" + record.pocketId)) return true;
+  if (record.tg && record.tg.id && (await env.AVA_KV.get("blk:t:" + record.tg.id))) return true;
+  return false;
+}
+
+// Разовое заполнение списка участниками, одобренными до его появления.
+async function backfillMembers(env) {
+  if ((await env.AVA_KV.get("cfg:idx1")) || typeof env.AVA_KV.list !== "function") return;
+  for (const prefix of ["apr:", "pid:"]) {
+    let cursor;
+    do {
+      const page = await env.AVA_KV.list({ prefix, cursor });
+      for (const k of page.keys) {
+        const reqId = await env.AVA_KV.get(k.name);
+        const rec = reqId ? await getRequest(env, reqId) : null;
+        if (rec && rec.status === "approved") await indexMember(env, rec);
+      }
+      cursor = page.list_complete ? null : page.cursor;
+    } while (cursor);
+  }
+  await env.AVA_KV.put("cfg:idx1", "1");
+}
+
+async function ensureAdminCommands(env) {
+  if (await env.AVA_KV.get("cfg:cmds1")) return;
+  const res = await telegram(env, "setMyCommands", {
+    commands: [
+      { command: "members", description: "Участники клуба" },
+      { command: "find", description: "Найти: /find ID или @username" },
+      { command: "start", description: "Состояние бота и помощь" },
+    ],
+    scope: { type: "chat", chat_id: Number(env.ADMIN_CHAT_ID) },
+  });
+  if (res.ok) await env.AVA_KV.put("cfg:cmds1", "1");
+}
+
+function memberButton(pid, m) {
+  const who = m.n || (m.u ? "@" + m.u : "без имени");
+  return [{ text: (m.b ? "🚫 " : "✅ ") + who.slice(0, 24) + " · " + pid, callback_data: "m:" + pid }];
+}
+
+function sortedMembers(all) {
+  return Object.entries(all).sort((a, b) => String(b[1].at).localeCompare(String(a[1].at)));
+}
+
+function listView(all, page) {
+  const list = sortedMembers(all);
+  const blocked = list.filter(([, m]) => m.b).length;
+  const pages = Math.max(1, Math.ceil(list.length / PAGE));
+  page = Math.min(Math.max(0, page), pages - 1);
+  const rows = list.slice(page * PAGE, page * PAGE + PAGE).map(([pid, m]) => memberButton(pid, m));
+  const nav = [];
+  if (page > 0) nav.push({ text: "« Назад", callback_data: "ml:" + (page - 1) });
+  if (page < pages - 1) nav.push({ text: "Вперёд »", callback_data: "ml:" + (page + 1) });
+  if (nav.length) rows.push(nav);
+  return {
+    text: "👥 <b>Участники AVA TRADE</b>\n\nВсего: " + list.length + " · активных: " + (list.length - blocked) +
+      " · заблокировано: " + blocked + (pages > 1 ? "\nСтраница " + (page + 1) + " из " + pages : "") +
+      (list.length ? "\n\nНажмите на участника, чтобы открыть карточку." : "\n\nПока никого нет — участники появятся после одобрения заявок."),
+    reply_markup: { inline_keyboard: rows },
+  };
+}
+
+async function sendMemberList(env, chatId, page) {
+  await backfillMembers(env);
+  const v = listView(await loadMembers(env), page);
+  await telegram(env, "sendMessage", { chat_id: chatId, parse_mode: "HTML", ...v });
+}
+
+async function findMembers(env, chatId, query) {
+  await backfillMembers(env);
+  const q = query.trim().toLowerCase().replace(/^@/, "");
+  const found = sortedMembers(await loadMembers(env)).filter(([pid, m]) =>
+    pid.includes(q) || (m.u && m.u.toLowerCase().includes(q)) || (m.n && m.n.toLowerCase().includes(q)) || String(m.t) === q,
+  ).slice(0, PAGE);
+  await telegram(env, "sendMessage", {
+    chat_id: chatId,
+    parse_mode: "HTML",
+    text: found.length ? "🔎 Найдено: " + found.length + "\nНажмите, чтобы открыть карточку." : "🔎 Никого не нашёл по запросу «" + escapeHtml(query) + "».",
+    reply_markup: { inline_keyboard: found.map(([pid, m]) => memberButton(pid, m)) },
+  });
+}
+
+function memberCard(pid, m) {
+  const who = m.u ? "@" + escapeHtml(m.u) : "без username";
+  const lines = [
+    "👤 <b>Участник AVA TRADE</b>",
+    "",
+    "Pocket Option ID: <code>" + pid + "</code>",
+    m.t ? "Telegram: <a href=\"tg://user?id=" + m.t + "\">" + who + "</a>" + (m.n ? " · " + escapeHtml(m.n) : "") : "Telegram: не подтверждён (одобрен по старой схеме)",
+    "В клубе с: " + String(m.at || "").slice(0, 10),
+    "Статус: " + (m.b ? "🚫 заблокирован" : "✅ активен"),
+  ];
+  return {
+    text: lines.join("\n"),
+    reply_markup: { inline_keyboard: [
+      [m.b ? { text: "✅ Разблокировать", callback_data: "u:" + pid } : { text: "🚫 Заблокировать", callback_data: "b:" + pid }],
+      [{ text: "« К списку", callback_data: "ml:0" }],
+    ] },
+  };
+}
+
+async function memberAction(env, cb, act, arg) {
+  const edit = (v) => telegram(env, "editMessageText", {
+    chat_id: cb.message.chat.id, message_id: cb.message.message_id, parse_mode: "HTML", disable_web_page_preview: true, ...v,
+  });
+  const all = await loadMembers(env);
+  if (act === "ml") {
+    await edit(listView(all, Number(arg)));
+    await answer(env, cb.id, "");
+    return;
+  }
+  const m = all[arg];
+  if (!m) { await answer(env, cb.id, "Участник не найден"); return; }
+
+  if (act === "b" && !m.b) {
+    m.b = true;
+    await env.AVA_KV.put("blk:p:" + arg, "1");
+    if (m.t) await env.AVA_KV.put("blk:t:" + m.t, "1");
+    const rec = await getRequest(env, m.r);
+    if (rec && rec.inviteLink) {
+      await telegram(env, "revokeChatInviteLink", { chat_id: env.CHANNEL_ID, invite_link: rec.inviteLink });
+      rec.inviteExpiresAt = 1; // при разблокировке выдастся новая ссылка
+      await saveRequest(env, rec);
+    }
+    if (m.t && env.CHANNEL_ID) {
+      await telegram(env, "banChatMember", { chat_id: env.CHANNEL_ID, user_id: Number(m.t) });
+      await telegram(env, "sendMessage", { chat_id: m.t, text: "Ваш доступ к AVA TRADE VIP закрыт администратором." });
+    }
+  } else if (act === "u" && m.b) {
+    m.b = false;
+    await env.AVA_KV.delete("blk:p:" + arg);
+    if (m.t) await env.AVA_KV.delete("blk:t:" + m.t);
+    if (m.t && env.CHANNEL_ID) {
+      await telegram(env, "unbanChatMember", { chat_id: env.CHANNEL_ID, user_id: Number(m.t), only_if_banned: true });
+      await telegram(env, "sendMessage", { chat_id: m.t, text: "✅ Доступ к AVA TRADE восстановлен. Откройте сайт — там будет новая ссылка в VIP-чат." });
+    }
+  }
+  all[arg] = m;
+  await env.AVA_KV.put(MEMBERS_KEY, JSON.stringify(all));
+  await edit(memberCard(arg, m));
+  await answer(env, cb.id, act === "b" ? "Заблокирован 🚫" : act === "u" ? "Разблокирован ✅" : "");
 }
 
 /* ---------- Заявки: Telegram участника, уведомления ---------- */
@@ -432,6 +621,10 @@ async function linkTelegram(env, msg, code) {
   }
 
   const from = msg.from || {};
+  if (await env.AVA_KV.get("blk:t:" + from.id)) {
+    await reply("Доступ к клубу AVA TRADE для этого аккаунта закрыт администратором.");
+    return;
+  }
   record.tg = {
     id: from.id,
     username: from.username || null,
@@ -450,6 +643,7 @@ async function linkTelegram(env, msg, code) {
       await env.AVA_KV.put("pid:" + record.pocketId, record.reqId, { expirationTtl: REQUEST_TTL });
       await env.AVA_KV.put("apr:" + record.pocketId, record.reqId, { expirationTtl: REQUEST_TTL });
       await env.AVA_KV.put("tgu:" + from.id, record.reqId, { expirationTtl: REQUEST_TTL });
+      await indexMember(env, record);
       await notifyMember(env, record);
       await telegram(env, "sendMessage", {
         chat_id: env.ADMIN_CHAT_ID,
@@ -693,10 +887,15 @@ async function handlePrivateMessage(env, msg) {
   }
 
   if (String(msg.from.id) === String(env.ADMIN_CHAT_ID)) {
+    await ensureAdminCommands(env);
+    if (/^\/members(@\w+)?$/.test(text)) { await sendMemberList(env, msg.chat.id, 0); return; }
+    const find = /^\/find(?:@\w+)?\s+(.+)$/.exec(text);
+    if (find) { await findMembers(env, msg.chat.id, find[1]); return; }
     await reply(
       "AVA TRADE бот работает ✅\n" +
       "VIP-группа: " + (env.CHANNEL_ID ? "подключена" : "не подключена — напишите сообщение в группе") + "\n" +
-      "Заявки с сайта приходят сюда с кнопками ✅ / ❌ / 💰.",
+      "Заявки с сайта приходят сюда с кнопками ✅ / ❌ / 💰.\n\n" +
+      "Команды:\n/members — участники клуба\n/find 12345678 или /find @username — найти участника",
     );
   } else {
     await reply("Это служебный бот AVA TRADE. Вступить в клуб можно через сайт.");
