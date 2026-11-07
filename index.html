@@ -664,6 +664,24 @@
         .calc-out b { display: block; margin-top: 3px; font-size: 18px; color: #fff; font-variant-numeric: tabular-nums; }
         .calc-out .bad b { color: #ff7a85; }
 
+        .lessons li.lesson-group {
+            display: flex; align-items: center; justify-content: space-between;
+            padding: 14px 14px 8px; background: rgba(160, 32, 255, 0.06);
+            color: #c56dff; font-size: 12px; font-weight: 700; letter-spacing: 0.12em; text-transform: uppercase;
+        }
+        .lessons li.lesson-group em { font-style: normal; color: var(--text-3); letter-spacing: 0; }
+
+        /* Чек-лист */
+        .checklist { padding: 6px; border-radius: 16px; background: #131722; border: 1px solid #252b3b; }
+        .check { display: flex; align-items: flex-start; gap: 12px; padding: 11px 10px; border-radius: 12px; cursor: pointer; color: rgba(240,232,255,0.85); font-size: 14.5px; line-height: 1.4; }
+        .check + .check { border-top: 1px solid #1f2533; }
+        .check input { position: absolute; opacity: 0; pointer-events: none; }
+        .check .box { width: 22px; height: 22px; flex-shrink: 0; border-radius: 7px; border: 2px solid #3a4157; transition: all .2s; position: relative; margin-top: -1px; }
+        .check input:checked + .box { background: var(--green); border-color: var(--green); }
+        .check input:checked + .box::after { content: "✓"; position: absolute; inset: 0; display: grid; place-items: center; color: #fff; font-size: 14px; font-weight: 800; }
+        .check input:checked ~ span:last-child { color: #fff; }
+        .check-count { padding: 8px 10px 6px; color: var(--text-3); font-size: 12.5px; text-align: right; }
+
         /* Тест */
         .quiz { margin-top: 22px !important; padding: 16px; border-radius: var(--radius-lg); background: rgba(160, 32, 255, 0.07); border: 1px solid var(--line-strong); }
         .quiz-q { font-size: 16px; font-weight: 640; line-height: 1.4; }
@@ -1119,12 +1137,25 @@
            TRADING ACADEMY
            ===================================================== */
         var LESSON_TITLES = [
-            ["platform", "🖥", "Как устроена платформа", 4],
-            ["candles", "🕯", "Японские свечи", 4],
-            ["patterns", "🔍", "Свечные паттерны", 6],
-            ["levels", "📐", "Тренд и уровни", 5],
-            ["indicators", "📈", "Индикаторы", 6],
-            ["risk", "🛡", "Риск-менеджмент", 5]
+            ["platform", "🖥", "Как устроена платформа", 4, "Основы"],
+            ["candles", "🕯", "Японские свечи", 4, "Основы"],
+            ["timeframes", "⏱", "Таймфреймы и время сделки", 5, "Основы"],
+            ["sessions", "🌍", "Торговые сессии и OTC", 5, "Основы"],
+            ["patterns", "🔍", "Свечные паттерны", 6, "Технический анализ"],
+            ["levels", "📐", "Тренд и уровни", 5, "Технический анализ"],
+            ["price-action", "📍", "Пин-бар и внутренний бар", 6, "Технический анализ"],
+            ["breakouts", "💥", "Пробой, ретест и ложный пробой", 6, "Технический анализ"],
+            ["channels", "🛤", "Торговля в канале", 5, "Технический анализ"],
+            ["reversal-figures", "⛰", "Разворотные фигуры", 7, "Фигуры"],
+            ["continuation-figures", "🚩", "Фигуры продолжения тренда", 6, "Фигуры"],
+            ["indicators", "📈", "Индикаторы", 6, "Индикаторы"],
+            ["macd-stoch", "📊", "MACD и Стохастик", 6, "Индикаторы"],
+            ["confluence", "🎯", "Как собрать сильный сигнал", 6, "Стратегия"],
+            ["risk", "🛡", "Риск-менеджмент", 5, "Риск и психология"],
+            ["trading-plan", "📝", "Торговый план и дневник", 5, "Риск и психология"],
+            ["psychology", "🧠", "Психология трейдера", 5, "Риск и психология"],
+            ["mistakes", "⚠️", "10 ошибок новичка", 4, "Риск и психология"],
+            ["demo-to-real", "🚀", "Переход с демо на реальный счёт", 4, "Риск и психология"]
         ];
         var DONE_KEY = "ava_academy_done";
         var lessons = null;
@@ -1149,15 +1180,23 @@
             var unlocked = Boolean(lessons);
             var done = getDone();
             var items = unlocked
-                ? lessons.map(function (l) { return [l.id, l.emoji, l.title, l.minutes]; })
+                ? lessons.map(function (l) { return [l.id, l.emoji, l.title, l.minutes, l.module]; })
                 : LESSON_TITLES;
 
             academySection.classList.toggle("locked", !unlocked);
             lockBanner.classList.toggle("hidden", unlocked);
 
+            var lastModule = null;
             lessonList.innerHTML = items.map(function (it, idx) {
                 var isDone = unlocked && done.indexOf(it[0]) !== -1;
-                return '<li><button class="lesson-row' + (isDone ? " done" : "") + '" data-idx="' + idx + '"' +
+                var head = "";
+                if (it[4] && it[4] !== lastModule) {
+                    lastModule = it[4];
+                    var inMod = items.filter(function (x) { return x[4] === it[4]; });
+                    var doneMod = inMod.filter(function (x) { return unlocked && done.indexOf(x[0]) !== -1; }).length;
+                    head = '<li class="lesson-group"><span>' + it[4] + "</span><em>" + doneMod + "/" + inMod.length + "</em></li>";
+                }
+                return head + '<li><button class="lesson-row' + (isDone ? " done" : "") + '" data-idx="' + idx + '"' +
                     (unlocked ? "" : " disabled") + ' type="button">' +
                     '<span class="lesson-ico">' + it[1] + "</span>" +
                     '<span class="lesson-meta"><b>' + (idx + 1) + ". " + it[2] + "</b><span>" + it[3] + " мин" +
@@ -1223,6 +1262,12 @@
             if (b.type === "platform") return drawPlatform();
             if (b.type === "anatomy") return drawAnatomy();
             if (b.type === "calc") return drawCalc();
+            if (b.type === "sessions") return drawSessions();
+            if (b.type === "checklist") {
+                return (b.title ? "<h3>" + b.title + "</h3>" : "") + '<div class="checklist">' + b.items.map(function (t, i) {
+                    return '<label class="check"><input type="checkbox" data-ci="' + i + '"><span class="box"></span><span>' + t + "</span></label>";
+                }).join("") + '<div class="check-count"></div></div>';
+            }
             return "";
         }
 
@@ -1279,6 +1324,28 @@
                     b.addEventListener("click", function () { showToast("Это учебный макет — сделки здесь не совершаются."); });
                 });
             }
+
+            // Чек-листы (отметки запоминаются в этом браузере)
+            Array.prototype.forEach.call(root.querySelectorAll(".checklist"), function (cl, n) {
+                var key = "ava_check_" + l.id + "_" + n;
+                var saved = [];
+                try { saved = JSON.parse(localStorage.getItem(key) || "[]"); } catch (e) {}
+                var boxes = cl.querySelectorAll("input");
+                var upd = function () {
+                    var on = Array.prototype.filter.call(boxes, function (b) { return b.checked; }).length;
+                    cl.querySelector(".check-count").textContent = "Отмечено: " + on + " из " + boxes.length;
+                };
+                Array.prototype.forEach.call(boxes, function (b, i) {
+                    b.checked = saved.indexOf(i) !== -1;
+                    b.addEventListener("change", function () {
+                        var list = [];
+                        Array.prototype.forEach.call(boxes, function (x, j) { if (x.checked) list.push(j); });
+                        try { localStorage.setItem(key, JSON.stringify(list)); } catch (e) {}
+                        upd();
+                    });
+                });
+                upd();
+            });
 
             // Калькулятор риска
             var calc = root.querySelector(".calc");
@@ -1342,6 +1409,29 @@
             return '<div class="term">' + s + "</div>";
         }
 
+        function drawSessions() {
+            // Время UTC; в Бишкеке (UTC+6) — на 6 часов больше
+            var rows = [["Азия · Токио", 0, 9, "#4a8cff"], ["Европа · Лондон", 7, 16, "#b45cff"], ["Америка · Нью-Йорк", 12, 21, "#2bb673"]];
+            var W = 420, L = 8, R = 412, top = 30, rowH = 34;
+            var X = function (h) { return L + (R - L) * h / 24; };
+            var s = '<svg viewBox="0 0 ' + W + ' 168" role="img" aria-label="Торговые сессии">';
+            s += '<rect width="' + W + '" height="168" fill="#131722"/>';
+            for (var h = 0; h <= 24; h += 3) {
+                s += '<line x1="' + X(h) + '" y1="' + (top - 6) + '" x2="' + X(h) + '" y2="' + (top + rowH * 3) + '" stroke="#1f2533"/>';
+                s += '<text x="' + X(h) + '" y="16" fill="#6b7387" font-size="11" text-anchor="' + (h === 0 ? "start" : h === 24 ? "end" : "middle") + '">' + ((h + 6) % 24) + ":00</text>";
+            }
+            s += '<rect x="' + X(12) + '" y="' + (top - 4) + '" width="' + (X(16) - X(12)) + '" height="' + (rowH * 3 + 2) + '" fill="rgba(245,184,61,0.10)" stroke="rgba(245,184,61,0.5)" stroke-dasharray="4 3" rx="4"/>';
+            rows.forEach(function (r, i) {
+                var y = top + i * rowH;
+                s += '<rect x="' + X(r[1]) + '" y="' + (y + 4) + '" width="' + (X(r[2]) - X(r[1])) + '" height="24" rx="7" fill="' + r[3] + '" opacity=".85"/>';
+                s += '<text x="' + (X(r[1]) + 8) + '" y="' + (y + 16.5) + '" fill="#fff" font-size="12" font-weight="700" dominant-baseline="middle">' + r[0] + "</text>";
+            });
+            s += '<text x="' + ((X(12) + X(16)) / 2) + '" y="' + (top + rowH * 3 + 16) + '" fill="#f5b83d" font-size="12" font-weight="700" text-anchor="middle">Самое активное время</text>';
+            s += '<text x="8" y="160" fill="#6b7387" font-size="11">Время по Бишкеку (UTC+6), примерно</text>';
+            s += "</svg>";
+            return '<div class="term"><div class="term-bar"><span class="term-asset">🌍 Сессии рынка</span><span style="margin-left:auto">24 часа</span></div>' + s + "</div>";
+        }
+
         function drawCalc() {
             return '<div class="calc">' +
                 '<div class="calc-row"><label for="calcDep">Ваш депозит, $</label><input id="calcDep" class="js-dep" type="number" inputmode="decimal" min="0" value="200"></div>' +
@@ -1382,7 +1472,8 @@
             var cs = ch.candles, n = cs.length;
             var W = 420, AX = 74, PW = W - AX;
             var top = 16, MH = 240, bottom = 16;
-            var H = MH + (ch.rsi ? 92 : 0);
+            var hasSub = Boolean(ch.rsi || ch.stoch || ch.macd);
+            var H = MH + (hasSub ? 92 : 0);
             var step = PW / (n + 2);
             var cw = Math.max(3, step * 0.64);
             var X = function (i) { return step * (i + 0.9); };
@@ -1436,12 +1527,13 @@
                 s += '<polyline points="' + mid.join(" ") + '" fill="none" stroke="' + C.blue + '" stroke-width="1" stroke-dasharray="4 3" opacity=".7"/>';
             }
 
-            // уровни
+            // уровни (подписи рисуются поверх свечей)
+            var lvLabels = "";
             (ch.levels || []).forEach(function (lv) {
                 var ly = Y(lv.price), col = C[lv.color] || C.violet;
                 s += '<line x1="0" y1="' + f(ly) + '" x2="' + PW + '" y2="' + f(ly) + '" stroke="' + col + '" stroke-width="1.5" stroke-dasharray="6 4"/>';
-                s += '<rect x="6" y="' + f(ly - 21) + '" width="' + (lv.label.length * 8 + 14) + '" height="18" rx="4" fill="' + col + '"/>';
-                s += '<text x="13" y="' + f(ly - 12) + '" fill="#fff" font-size="13" font-weight="700" dominant-baseline="middle">' + lv.label + "</text>";
+                lvLabels += '<rect x="6" y="' + f(ly - 21) + '" width="' + (lv.label.length * 8 + 14) + '" height="18" rx="4" fill="' + col + '"/>';
+                lvLabels += '<text x="13" y="' + f(ly - 12) + '" fill="#fff" font-size="13" font-weight="700" dominant-baseline="middle">' + lv.label + "</text>";
             });
 
             // линии тренда
@@ -1467,6 +1559,8 @@
                 s += '<line x1="' + f(x) + '" y1="' + f(Y(c[1])) + '" x2="' + f(x) + '" y2="' + f(Y(c[2])) + '" stroke="' + col + '" stroke-width="1.3"/>';
                 s += '<rect x="' + f(x - cw / 2) + '" y="' + f(Math.min(yo, yc)) + '" width="' + f(cw) + '" height="' + f(Math.max(1.2, Math.abs(yc - yo))) + '" fill="' + col + '" rx="1"/>';
             });
+
+            s += lvLabels;
 
             // скользящие средние
             (ch.ma || []).forEach(function (m) {
@@ -1513,25 +1607,70 @@
             s += '<rect x="' + (PW + 2) + '" y="' + f(ly2 - 10) + '" width="' + (AX - 4) + '" height="20" rx="3" fill="' + lcol + '"/>';
             s += '<text x="' + (PW + 6) + '" y="' + f(ly2) + '" fill="#fff" font-size="13" font-weight="700" dominant-baseline="middle">' + lc.toFixed(5) + "</text>";
 
-            // RSI
-            if (ch.rsi) {
-                var r = rsiCalc(closes, ch.rsi.period), rt = MH + 12, rh = 66;
+            // Нижняя панель индикатора: RSI / Стохастик / MACD
+            if (hasSub) {
+                var rt = MH + 12, rh = 66;
                 var RY = function (v) { return rt + (100 - v) / 100 * rh; };
                 s += '<line x1="0" y1="' + (MH + 2) + '" x2="' + W + '" y2="' + (MH + 2) + '" stroke="#252b3b"/>';
-                s += '<rect x="0" y="' + f(RY(70)) + '" width="' + PW + '" height="' + f(RY(30) - RY(70)) + '" fill="rgba(180,92,255,0.06)"/>';
-                [70, 30].forEach(function (lv) {
-                    s += '<line x1="0" y1="' + f(RY(lv)) + '" x2="' + PW + '" y2="' + f(RY(lv)) + '" stroke="#6b7387" stroke-dasharray="4 4"/>';
-                    s += '<text x="' + (PW + 6) + '" y="' + f(RY(lv)) + '" fill="#6b7387" font-size="13" dominant-baseline="middle">' + lv + "</text>";
-                });
-                var rp = [];
-                r.forEach(function (v, i) { if (v !== null) rp.push(f(X(i)) + "," + f(RY(v))); });
-                s += '<polyline points="' + rp.join(" ") + '" fill="none" stroke="' + C.violet + '" stroke-width="2"/>';
-                var rl = r[r.length - 1];
-                s += '<text x="8" y="' + (rt + 4) + '" fill="' + C.violet + '" font-size="13" font-weight="700" dominant-baseline="hanging">RSI ' + ch.rsi.period + " · " + rl.toFixed(0) + "</text>";
+                var line = function (vals, Yf, col, w) {
+                    var pts = [];
+                    vals.forEach(function (v, i) { if (v !== null && !isNaN(v)) pts.push(f(X(i)) + "," + f(Yf(v))); });
+                    return '<polyline points="' + pts.join(" ") + '" fill="none" stroke="' + col + '" stroke-width="' + (w || 2) + '"/>';
+                };
+                var zones = function (hiZ, loZ) {
+                    var z = '<rect x="0" y="' + f(RY(hiZ)) + '" width="' + PW + '" height="' + f(RY(loZ) - RY(hiZ)) + '" fill="rgba(180,92,255,0.06)"/>';
+                    [hiZ, loZ].forEach(function (lv) {
+                        z += '<line x1="0" y1="' + f(RY(lv)) + '" x2="' + PW + '" y2="' + f(RY(lv)) + '" stroke="#6b7387" stroke-dasharray="4 4"/>';
+                        z += '<text x="' + (PW + 6) + '" y="' + f(RY(lv)) + '" fill="#6b7387" font-size="13" dominant-baseline="middle">' + lv + "</text>";
+                    });
+                    return z;
+                };
+                var label = function (t, col) {
+                    return '<text x="8" y="' + (rt + 2) + '" fill="' + col + '" font-size="13" font-weight="700" dominant-baseline="hanging">' + t + "</text>";
+                };
+                if (ch.rsi) {
+                    var r = rsiCalc(closes, ch.rsi.period);
+                    s += zones(70, 30) + line(r, RY, C.violet);
+                    s += label("RSI " + ch.rsi.period + " · " + r[r.length - 1].toFixed(0), C.violet);
+                } else if (ch.stoch) {
+                    var kk = cs.map(function (c, i) {
+                        if (i < ch.stoch.k - 1) return null;
+                        var hh = -Infinity, ll = Infinity;
+                        for (var j = i - ch.stoch.k + 1; j <= i; j++) { hh = Math.max(hh, cs[j][1]); ll = Math.min(ll, cs[j][2]); }
+                        return hh === ll ? 50 : (c[3] - ll) / (hh - ll) * 100;
+                    });
+                    var dd = kk.map(function (_, i) {
+                        var w = kk.slice(Math.max(0, i - ch.stoch.d + 1), i + 1);
+                        return w.length < ch.stoch.d || w.some(function (v) { return v === null; }) ? null : w.reduce(function (a, b) { return a + b; }, 0) / w.length;
+                    });
+                    s += zones(80, 20) + line(kk, RY, C.blue) + line(dd, RY, C.amber, 1.6);
+                    s += label("Stoch " + ch.stoch.k + "," + ch.stoch.d + " · " + kk[kk.length - 1].toFixed(0), C.blue);
+                } else if (ch.macd) {
+                    var ema = function (vals, n) {
+                        var k = 2 / (n + 1), out = [], prev = null;
+                        vals.forEach(function (v) { if (v === null) { out.push(null); return; } prev = prev === null ? v : v * k + prev * (1 - k); out.push(prev); });
+                        return out;
+                    };
+                    var e1 = ema(closes, ch.macd.fast), e2 = ema(closes, ch.macd.slow);
+                    var m = closes.map(function (_, i) { return i < ch.macd.slow - 1 ? null : e1[i] - e2[i]; });
+                    var sg = ema(m, ch.macd.signal);
+                    var hist = m.map(function (v, i) { return v === null || sg[i] === null ? null : v - sg[i]; });
+                    var mx = 1e-9;
+                    m.concat(sg, hist).forEach(function (v) { if (v !== null) mx = Math.max(mx, Math.abs(v)); });
+                    var MYf = function (v) { return rt + rh / 2 - v / mx * (rh / 2 - 2); };
+                    s += '<line x1="0" y1="' + f(MYf(0)) + '" x2="' + PW + '" y2="' + f(MYf(0)) + '" stroke="#3a4157"/>';
+                    hist.forEach(function (v, i) {
+                        if (v === null) return;
+                        var y0 = MYf(0), y1 = MYf(v);
+                        s += '<rect x="' + f(X(i) - cw / 2) + '" y="' + f(Math.min(y0, y1)) + '" width="' + f(cw) + '" height="' + f(Math.max(0.8, Math.abs(y1 - y0))) + '" fill="' + (v >= 0 ? C.green : C.red) + '" opacity=".55"/>';
+                    });
+                    s += line(m, MYf, C.blue) + line(sg, MYf, C.amber, 1.6);
+                    s += label("MACD " + ch.macd.fast + "," + ch.macd.slow + "," + ch.macd.signal, C.blue);
+                }
             }
 
             s += "</svg>";
-            return '<div class="term"><div class="term-bar"><span class="term-asset"><i></i>EUR/USD</span><span class="term-tf">M1</span><span style="margin-left:auto">Учебный график</span></div>' + s + "</div>";
+            return '<div class="term"><div class="term-bar"><span class="term-asset"><i></i>EUR/USD</span><span class="term-tf">' + (ch.tf || "M1") + '</span><span style="margin-left:auto">Учебный график</span></div>' + s + "</div>";
         }
 
         renderLessonList();

@@ -117,7 +117,8 @@ assert.ok(JSON.parse(store.get("req:" + reqId)).inviteExpiresAt > 1);
 const ar = await academy(token);
 assert.equal(ar.status, 200);
 const { lessons } = await ar.json();
-assert.equal(lessons.length, 6);
+assert.equal(lessons.length, 19);
+assert.equal(new Set(lessons.map((l) => l.id)).size, 19, "id уроков уникальны");
 for (const l of lessons) {
   assert.ok(l.title && l.blocks.length && l.quiz.options[l.quiz.answer]);
   for (const b of l.blocks.filter((b) => b.type === "chart")) {
@@ -127,10 +128,10 @@ for (const l of lessons) {
   }
 }
 // Пример сделки «Выше» в уроке 1 действительно заканчивается выше входа
-const ex = lessons[0].blocks.find((b) => b.type === "chart").chart;
+const ex = lessons.find((l) => l.id === "platform").blocks.find((b) => b.type === "chart").chart;
 assert.ok(ex.candles[40][3] > ex.candles[33][3], "пример сделки «Выше» должен быть в плюс");
 // Паттерны выглядят как паттерны
-const pat = lessons[2].blocks.filter((b) => b.type === "chart").map((b) => b.chart);
+const pat = lessons.find((l) => l.id === "patterns").blocks.filter((b) => b.type === "chart").map((b) => b.chart);
 const body = ([o, , , c]) => Math.abs(c - o);
 const [hm, hh, hl, hc] = pat[0].candles[pat[0].marks[0].i];
 assert.ok(Math.min(hm, hc) - hl > 2 * body([hm, 0, 0, hc]) && hh - Math.max(hm, hc) < body([hm, 0, 0, hc]) * 2, "молот");
