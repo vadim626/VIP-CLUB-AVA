@@ -5,7 +5,7 @@ name: Deploy server to Cloudflare
 
 on:
   push:
-    branches: [feature/id-verification]
+    branches: [main, feature/id-verification]
     paths: ["server/**", ".github/workflows/deploy-worker.yml"]
   workflow_dispatch:
 
