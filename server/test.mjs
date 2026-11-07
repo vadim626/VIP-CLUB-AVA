@@ -183,6 +183,35 @@ assert.equal(s.status, "rejected");
 assert.equal(s.inviteLink, undefined);
 assert.ok(toChat(7007).pop().body.text.includes("не подтверждён"));
 
+// 10a. Тот же владелец заходит снова (новое устройство) — вход сразу, без администратора
+r = await submit("12345678", "2.2.2.3");
+const back = await r.json();
+assert.equal(back.returning, true);
+const adminCount = toChat(111).length;
+const invitesBefore = calls.filter((c) => c.method === "createChatInviteLink").length;
+await startTg(back.telegramLink, 5001, "ivan_trader");
+s = await (await status(back.token)).json();
+assert.equal(s.status, "approved", "одобрен автоматически");
+assert.ok(s.inviteLink);
+assert.equal(calls.filter((c) => c.method === "createChatInviteLink").length, invitesBefore + 1, "новая одноразовая ссылка");
+assert.equal(toChat(111).length, adminCount + 1);
+assert.ok(toChat(111).pop().body.text.includes("Повторный вход"));
+assert.equal(toChat(111).at(-1).body.reply_markup, undefined, "без кнопок — решать ничего не нужно");
+assert.equal(toChat(5001).pop().body.reply_markup.inline_keyboard[0][0].url, "https://t.me/+ONE_TIME");
+
+// 10a-2. Чужой Telegram вводит одобренный ID — автоматически НЕ пускаем, админу предупреждение
+r = await submit("12345678", "2.2.2.4");
+const thief = await r.json();
+assert.equal(thief.returning, true);
+await startTg(thief.telegramLink, 6666, "stranger");
+assert.equal((await (await status(thief.token)).json()).status, "pending");
+assert.ok(toChat(111).pop().body.text.includes("ДРУГОГО Telegram"));
+// …и это не ломает быстрый вход настоящему владельцу
+r = await submit("12345678", "2.2.2.5");
+const back2 = await r.json();
+await startTg(back2.telegramLink, 5001, "ivan_trader");
+assert.equal((await (await status(back2.token)).json()).status, "approved");
+
 // 10b. «Не пополнен» → участнику сообщение с кнопкой «Я пополнил», на сайте — статус needs_deposit
 r = await submit("44440000", "5.5.5.5");
 const sub3 = await r.json();
@@ -234,4 +263,4 @@ const bare = await worker.fetch(
   new Request("https://w.dev/api/submit", { method: "POST", body: "{}" }), { AVA_KV: KV });
 assert.equal(bare.status, 503);
 
-console.log("Все 24 проверки пройдены ✅");
+console.log("Все 28 проверок пройдены ✅");

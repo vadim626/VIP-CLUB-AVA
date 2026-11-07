@@ -829,8 +829,8 @@
             <div class="status is-telegram hidden" id="stateTelegram">
                 <div class="status-icon"><svg viewBox="0 0 24 24" fill="#fff" aria-hidden="true"><path d="M21.94 4.3 18.8 19.12c-.24 1.05-.86 1.31-1.74.82l-4.8-3.54-2.32 2.23c-.26.26-.47.47-.96.47l.34-4.88 8.88-8.02c.39-.34-.08-.53-.6-.19L6.62 13l-4.72-1.48c-1.03-.32-1.05-1.03.21-1.52L20.56 2.9c.85-.31 1.6.2 1.38 1.4Z"/></svg></div>
                 <div class="eyebrow" style="color:#5cc8ff">Последний шаг</div>
-                <h2>Подтвердите Telegram</h2>
-                <p class="step-text">
+                <h2 id="tgTitle">Подтвердите Telegram</h2>
+                <p class="step-text" id="tgText">
                     Откройте бота AVA TRADE и нажмите <b>«Запустить»</b>. Так администратор
                     увидит ваш Telegram, а решение придёт вам прямо в чат.
                 </p>
@@ -956,7 +956,7 @@
 
         var ADMIN_URL = "https://t.me/m/6nZG9TLfMjIy";
         var STORAGE_KEY = "ava_verify_v1";
-        var POLL_MS = 6000;
+        var POLL_MS = 3000;
 
         var $ = function (id) { return document.getElementById(id); };
 
@@ -1052,6 +1052,10 @@
                 stopPolling();
             } else if (data.status === "awaiting_tg") {
                 if (data.telegramLink) $("tgConfirmButton").href = data.telegramLink;
+                if (data.returning) {
+                    $("tgTitle").textContent = "С возвращением! 👋";
+                    $("tgText").innerHTML = "Этот ID уже одобрен. Подтвердите тот же Telegram, что и в прошлый раз, — <b>доступ откроется сразу</b>.";
+                }
                 show($("stateTelegram"));
                 startPolling();
             } else if (data.status === "needs_deposit") {
@@ -1111,9 +1115,13 @@
             pollTimer = null;
         }
 
-        document.addEventListener("visibilitychange", function () {
+        // Вернулись на сайт из Telegram — сразу обновляем статус, не дожидаясь таймера
+        var refreshNow = function () {
             if (document.visibilityState === "visible" && pollTimer) checkStatus();
-        });
+        };
+        document.addEventListener("visibilitychange", refreshNow);
+        window.addEventListener("focus", refreshNow);
+        window.addEventListener("pageshow", refreshNow);
 
         /* ---------- Кнопки ---------- */
         joinButton.addEventListener("click", function () {
@@ -1172,7 +1180,7 @@
             })
                 .then(function (r) {
                     if (r.ok && r.body.token) {
-                        var fresh = { token: r.body.token, pocketId: id, status: r.body.status || "pending", telegramLink: r.body.telegramLink };
+                        var fresh = { token: r.body.token, pocketId: id, status: r.body.status || "pending", telegramLink: r.body.telegramLink, returning: Boolean(r.body.returning) };
                         save(fresh);
                         renderStatus(fresh);
                         reveal(statusSection);

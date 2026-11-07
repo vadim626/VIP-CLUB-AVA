@@ -128,11 +128,24 @@ async function handleSubmit(request, env, cors) {
     createdAt: new Date().toISOString(),
   };
 
+  // Этот ID уже одобряли и знаем его Telegram — после подтверждения
+  // того же Telegram доступ откроется сразу, без администратора.
+  const prevId = (await env.AVA_KV.get("apr:" + pocketId)) || (await env.AVA_KV.get("pid:" + pocketId));
+  const prev = prevId ? await getRequest(env, prevId) : null;
+  if (prev && prev.status === "approved" && prev.tg && prev.tg.id) {
+    record.expectTgId = prev.tg.id;
+    record.reapproveOf = prev.reqId;
+  }
+
   await saveRequest(env, record);
   await env.AVA_KV.put("tok:" + record.tokenHash, reqId, { expirationTtl: REQUEST_TTL });
   await env.AVA_KV.put("link:" + linkCode, reqId, { expirationTtl: REQUEST_TTL });
 
-  return json({ token, status: record.status, pocketId, telegramLink: tgLink(bot, linkCode) }, 200, cors);
+  return json(
+    { token, status: record.status, pocketId, telegramLink: tgLink(bot, linkCode), returning: Boolean(record.expectTgId) },
+    200,
+    cors,
+  );
 }
 
 // Посетитель сообщил «Я пополнил» на сайте.
@@ -324,6 +337,9 @@ async function handleWebhook(request, env) {
 
   record.decidedAt = new Date().toISOString();
   await saveRequest(env, record);
+  if (record.status === "approved") {
+    await env.AVA_KV.put("apr:" + record.pocketId, record.reqId, { expirationTtl: REQUEST_TTL });
+  }
 
   await telegram(env, "editMessageText", {
     chat_id: cb.message.chat.id,
@@ -381,10 +397,39 @@ async function linkTelegram(env, msg, code) {
     username: from.username || null,
     name: [from.first_name, from.last_name].filter(Boolean).join(" ").slice(0, 64),
   };
+  // Возвращающийся участник: тот же Telegram, что был одобрен раньше — вход сразу.
+  if (record.expectTgId && String(record.expectTgId) === String(from.id)) {
+    const link = await createInvite(env, record.pocketId);
+    if (link.ok) {
+      record.status = "approved";
+      record.autoApproved = true;
+      record.inviteLink = link.result.invite_link;
+      record.inviteExpiresAt = link.expiresAt;
+      record.decidedAt = new Date().toISOString();
+      await saveRequest(env, record);
+      await env.AVA_KV.put("pid:" + record.pocketId, record.reqId, { expirationTtl: REQUEST_TTL });
+      await env.AVA_KV.put("apr:" + record.pocketId, record.reqId, { expirationTtl: REQUEST_TTL });
+      await env.AVA_KV.put("tgu:" + from.id, record.reqId, { expirationTtl: REQUEST_TTL });
+      await notifyMember(env, record);
+      await telegram(env, "sendMessage", {
+        chat_id: env.ADMIN_CHAT_ID,
+        parse_mode: "HTML",
+        disable_web_page_preview: true,
+        text: "🔁 <b>Повторный вход</b>\n\n" + memberLine(record) +
+          "\n\nЭтот ID вы уже одобряли, Telegram совпал — доступ выдан автоматически.",
+      });
+      return;
+    }
+    console.error("auto re-approve invite failed", link.description);
+  }
+
   record.status = "pending";
 
   // Подавал ли этот ID или этот Telegram что-то раньше — подскажем администратору.
   const warnings = [];
+  if (record.expectTgId && String(record.expectTgId) !== String(from.id)) {
+    warnings.push("Этот ID уже был одобрен для ДРУГОГО Telegram-аккаунта. Возможно, кто-то вводит чужой ID.");
+  }
   const prevByPid = await env.AVA_KV.get("pid:" + record.pocketId);
   if (prevByPid && prevByPid !== record.reqId) {
     const prev = await getRequest(env, prevByPid);
@@ -464,6 +509,15 @@ async function requestRecheck(env, record) {
   if (!ok) return { error: "telegram_unavailable" };
   await saveRequest(env, record);
   return { ok: true };
+}
+
+function memberLine(record) {
+  const lines = ["Pocket Option ID: <code>" + record.pocketId + "</code>"];
+  if (record.tg) {
+    const who = record.tg.username ? "@" + escapeHtml(record.tg.username) : "без username";
+    lines.push("Telegram: <a href=\"tg://user?id=" + record.tg.id + "\">" + who + "</a>" + (record.tg.name ? " · " + escapeHtml(record.tg.name) : ""));
+  }
+  return lines.join("\n");
 }
 
 function escapeHtml(t) {
