@@ -17,12 +17,14 @@
  * Никаких автоматических «успешных проверок» здесь нет:
  * доступ открывается ТОЛЬКО после нажатия кнопки администратором.
  *
- * Все секреты хранятся в настройках Cloudflare (не в коде):
+ * Секреты хранятся в настройках Cloudflare (не в коде):
  *   BOT_TOKEN       — токен вашего бота от @BotFather
- *   ADMIN_CHAT_ID   — ваш Telegram ID (куда приходят заявки)
- *   CHANNEL_ID      — ID закрытого канала (например -1001234567890)
- *   WEBHOOK_SECRET  — случайная строка, защищает адрес для Telegram
- *   ALLOWED_ORIGIN  — адрес сайта, например https://vadim626.github.io
+ *   WEBHOOK_SECRET  — ваш секретный пароль настройки (латиница и цифры)
+ * Остальное сервер настраивает сам и хранит в KV:
+ *   администратор   — тот, кто отправит боту «/admin ПАРОЛЬ»
+ *   канал           — канал, который администратор подтвердит кнопкой
+ *   (можно задать и вручную переменными ADMIN_CHAT_ID и CHANNEL_ID)
+ * Открыть /setup?key=ПАРОЛЬ — подключает бота и показывает, что осталось.
  * Хранилище: KV-пространство с именем привязки AVA_KV.
  */
 
@@ -33,8 +35,9 @@ const ID_PATTERN = /^\d{5,12}$/;        // Pocket Option ID — только ц�
 const INVITE_TTL = 60 * 60 * 24 * 7;    // одноразовая ссылка действует 7 дней
 
 export default {
-  async fetch(request, env) {
+  async fetch(request, rawEnv) {
     const url = new URL(request.url);
+    const env = await withConfig(rawEnv);
     const cors = corsHeaders(request, env);
 
     if (request.method === "OPTIONS") {
@@ -53,6 +56,9 @@ export default {
       }
       if (url.pathname === "/api/academy" && request.method === "GET") {
         return await handleAcademy(request, env, cors);
+      }
+      if (url.pathname === "/setup" && request.method === "GET") {
+        return await handleSetup(url, env);
       }
       if (url.pathname === "/telegram/webhook" && request.method === "POST") {
         return await handleWebhook(request, env);
@@ -200,17 +206,40 @@ async function handleWebhook(request, env) {
     return new Response("ok");
   }
 
-  if (update.message && update.message.text && update.message.text.startsWith("/start")) {
-    // Помогает при настройке: бот сообщает ваш Telegram ID.
-    await telegram(env, "sendMessage", {
-      chat_id: update.message.chat.id,
-      text: "AVA TRADE бот работает.\nВаш Telegram ID: " + update.message.from.id,
-    });
+  const msg = update.message;
+  if (msg && msg.chat && msg.chat.type === "private" && msg.text) {
+    await handlePrivateMessage(env, msg);
+    return new Response("ok");
+  }
+
+  // Бот увидел канал (его добавили админом или в канале новый пост)
+  const channelChat =
+    (update.channel_post && update.channel_post.chat) ||
+    (update.my_chat_member && update.my_chat_member.chat.type === "channel" && update.my_chat_member.chat);
+  if (channelChat && channelChat.type === "channel") {
+    await offerChannel(env, channelChat);
     return new Response("ok");
   }
 
   const cb = update.callback_query;
   if (!cb) return new Response("ok");
+
+  // Подтверждение канала администратором
+  const chMatch = /^c:(-\d{5,20})$/.exec(cb.data || "");
+  if (chMatch) {
+    if (!env.ADMIN_CHAT_ID || String(cb.from.id) !== String(env.ADMIN_CHAT_ID)) {
+      await answer(env, cb.id, "Нет доступа");
+      return new Response("ok");
+    }
+    await env.AVA_KV.put("cfg:channel", chMatch[1]);
+    await telegram(env, "editMessageText", {
+      chat_id: cb.message.chat.id,
+      message_id: cb.message.message_id,
+      text: "✅ Канал подключён. Теперь при одобрении заявок бот будет выдавать одноразовые ссылки в этот канал.",
+    });
+    await answer(env, cb.id, "Канал подключён ✅");
+    return new Response("ok");
+  }
 
   // Нажимать кнопки может только администратор.
   if (String(cb.from.id) !== String(env.ADMIN_CHAT_ID)) {
@@ -352,6 +381,102 @@ function saveRequest(env, record) {
   return env.AVA_KV.put("req:" + record.reqId, JSON.stringify(record), {
     expirationTtl: REQUEST_TTL,
   });
+}
+
+/* ---------- Автонастройка ---------- */
+
+// Подмешивает к настройкам администратора и канал, сохранённые в KV.
+async function withConfig(env) {
+  if (!env || !env.AVA_KV) return env || {};
+  const out = { ...env };
+  if (!out.ADMIN_CHAT_ID) out.ADMIN_CHAT_ID = (await env.AVA_KV.get("cfg:admin")) || undefined;
+  if (!out.CHANNEL_ID) out.CHANNEL_ID = (await env.AVA_KV.get("cfg:channel")) || undefined;
+  return out;
+}
+
+async function handlePrivateMessage(env, msg) {
+  const text = msg.text.trim();
+  const reply = (t) => telegram(env, "sendMessage", { chat_id: msg.chat.id, text: t });
+
+  const adminCmd = /^\/admin\s+(\S+)$/.exec(text);
+  if (adminCmd) {
+    if (!env.WEBHOOK_SECRET || !timingSafeEqual(adminCmd[1], env.WEBHOOK_SECRET)) {
+      await reply("Неверный пароль.");
+      return;
+    }
+    await env.AVA_KV.put("cfg:admin", String(msg.from.id));
+    await reply(
+      "✅ Вы назначены администратором AVA TRADE.\n\n" +
+      (env.CHANNEL_ID
+        ? "Канал уже подключён — всё готово. Заявки с сайта будут приходить сюда."
+        : "Последний шаг: опубликуйте любое сообщение в вашем закрытом канале (потом его можно удалить). Я пришлю кнопку, чтобы подтвердить канал."),
+    );
+    return;
+  }
+
+  if (String(msg.from.id) === String(env.ADMIN_CHAT_ID)) {
+    await reply(
+      "AVA TRADE бот работает ✅\n" +
+      "Канал: " + (env.CHANNEL_ID ? "подключён" : "не подключён — опубликуйте сообщение в канале") + "\n" +
+      "Заявки с сайта приходят сюда с кнопками ✅ / ❌.",
+    );
+  } else {
+    await reply("Это служебный бот AVA TRADE. Вступить в клуб можно через сайт.");
+  }
+}
+
+async function offerChannel(env, chat) {
+  if (!env.ADMIN_CHAT_ID || String(env.CHANNEL_ID) === String(chat.id)) return;
+  const seenKey = "cfg:offered:" + chat.id;
+  if (await env.AVA_KV.get(seenKey)) return; // не спамим повторно
+  await env.AVA_KV.put(seenKey, "1", { expirationTtl: 600 });
+  await telegram(env, "sendMessage", {
+    chat_id: env.ADMIN_CHAT_ID,
+    text:
+      "Бот видит канал «" + (chat.title || "без названия") + "».\n" +
+      (env.CHANNEL_ID ? "Сейчас подключён другой канал. Заменить на этот?" : "Это ваш закрытый VIP-канал?"),
+    reply_markup: { inline_keyboard: [[{ text: "✅ Да, это мой канал", callback_data: "c:" + chat.id }]] },
+  });
+}
+
+async function handleSetup(url, env) {
+  const key = url.searchParams.get("key") || "";
+  const page = (title, rows) =>
+    new Response(
+      "<!doctype html><meta charset=utf-8><meta name=viewport content='width=device-width,initial-scale=1'>" +
+        "<title>AVA TRADE — настройка</title><body style='font:17px -apple-system,system-ui,sans-serif;background:#0b0714;color:#fff;padding:24px;max-width:560px;margin:auto;line-height:1.5'>" +
+        "<h2>" + title + "</h2>" + rows.map((r) => "<p>" + r + "</p>").join("") + "</body>",
+      { headers: { "Content-Type": "text/html; charset=utf-8", "Cache-Control": "no-store" } },
+    );
+
+  if (!env.WEBHOOK_SECRET || !env.BOT_TOKEN) {
+    return page("Настройка AVA TRADE", [
+      (env.BOT_TOKEN ? "✅" : "❌") + " BOT_TOKEN",
+      (env.WEBHOOK_SECRET ? "✅" : "❌") + " WEBHOOK_SECRET",
+      (env.AVA_KV ? "✅" : "❌") + " Хранилище AVA_KV",
+      "Добавьте недостающее в Cloudflare → Settings → Variables and Secrets.",
+    ]);
+  }
+  if (!timingSafeEqual(key, env.WEBHOOK_SECRET)) {
+    return page("Нет доступа", ["Неверный пароль в адресе (?key=…)."]);
+  }
+
+  const hook = await telegram(env, "setWebhook", {
+    url: url.origin + "/telegram/webhook",
+    secret_token: env.WEBHOOK_SECRET,
+    allowed_updates: ["message", "callback_query", "channel_post", "my_chat_member"],
+  });
+  const me = await telegram(env, "getMe", {});
+  const bot = me.ok ? "@" + me.result.username : "";
+
+  return page("Настройка AVA TRADE", [
+    (me.ok ? "✅ Бот " + bot : "❌ Бот не отвечает — проверьте BOT_TOKEN"),
+    (hook.ok ? "✅ Бот подключён к серверу" : "❌ Не удалось подключить бота: " + (hook.description || "")),
+    (env.AVA_KV ? "✅ Хранилище заявок" : "❌ Хранилище AVA_KV не подключено"),
+    (env.ADMIN_CHAT_ID ? "✅ Администратор назначен" : "⏳ Администратор: отправьте боту " + bot + " сообщение <b>/admin ВАШ_ПАРОЛЬ</b>"),
+    (env.CHANNEL_ID ? "✅ Канал подключён" : "⏳ Канал: опубликуйте любое сообщение в закрытом канале и нажмите кнопку, которую пришлёт бот"),
+    isConfigured(env) ? "<b>🎉 Всё готово! Сайт принимает заявки.</b>" : "Обновите эту страницу после каждого шага.",
+  ]);
 }
 
 function isConfigured(env) {

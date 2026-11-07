@@ -28,7 +28,7 @@ jobs:
 
       - name: Тесты сервера
         if: steps.check.outputs.skip != '1'
-        run: node server/test.mjs
+        run: node server/test.mjs && node server/test-setup.mjs
 
       - name: Загрузить в Cloudflare
         id: deploy
