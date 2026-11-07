@@ -55,26 +55,80 @@ async function seedFrom(text) {
 
 const r5 = (x) => Math.round(x * 1e5) / 1e5;
 
-// Реалистичное движение: тренды и боковики сменяют друг друга, волатильность «дышит».
+// Реалистичная модель рынка (как на OTC-графиках):
+//  • каждая свеча — это 14 «тиков», поэтому тени и тела получаются естественными;
+//  • режимы сменяют друг друга: боковик с отскоками от границ (чаще всего),
+//    тренд с откатами, короткий резкий импульс, затухание после импульса;
+//  • волатильность «дышит» (спокойные периоды сменяются активными);
+//  • редкие выносы цены (длинные тени) и ложные пробои границ боковика.
+const TICKS = 14;
+
 function series(seed, n, start = 1.0850) {
   const r = rng(seed);
+  const gauss = () => {
+    const u = Math.max(r(), 1e-9), v = r();
+    return Math.sqrt(-2 * Math.log(u)) * Math.cos(2 * Math.PI * v);
+  };
   const out = [];
-  let p = start, drift = 0, vol = 0.00035, left = 0;
-  for (let i = 0; i < n; i++) {
-    if (left <= 0) {
-      left = 20 + Math.floor(r() * 70);
-      const mode = r();
-      drift = mode < 0.35 ? 0 : (r() < 0.5 ? -1 : 1) * (0.00004 + r() * 0.00012);
-      vol = 0.00022 + r() * 0.00035;
+  let p = start;
+  let sigma = 0.00008;          // текущая волатильность одного тика
+  let regime = "range", left = 0;
+  let mid = p, half = 0.0012;   // центр и полуширина боковика
+  let trend = 0;                // направление тренда/импульса
+  let pullback = 0;             // свечей отката внутри тренда
+  const base = 0.00007;
+
+  const pickRegime = () => {
+    const x = r();
+    if (regime === "impulse") { regime = "calm"; left = 4 + Math.floor(r() * 8); mid = p; half = 0.0008; return; }
+    if (x < 0.5) {
+      regime = "range"; left = 25 + Math.floor(r() * 60);
+      mid = p + (r() - 0.5) * 0.0006; half = 0.0007 + r() * 0.0013;
+    } else if (x < 0.82) {
+      regime = "trend"; left = 18 + Math.floor(r() * 40); trend = r() < 0.5 ? -1 : 1; pullback = 0;
+    } else {
+      regime = "impulse"; left = 3 + Math.floor(r() * 5); trend = r() < 0.5 ? -1 : 1;
     }
+  };
+
+  for (let i = 0; i < n; i++) {
+    if (left <= 0) pickRegime();
     left--;
-    const pull = (1.0850 - p) * 0.004; // мягко держим цену в разумных пределах
+    // кластеризация волатильности: спокойные и активные периоды
+    sigma = Math.min(0.00022, Math.max(0.00003, sigma * 0.94 + base * 0.06 + Math.abs(gauss()) * 0.000005));
+
+    // направление на эту свечу (откат внутри тренда и т.п.)
+    let drift = 0, volMul = 1;
+    if (regime === "trend") {
+      if (pullback > 0) { pullback--; drift = -trend * 0.07; }
+      else { drift = trend * 0.09; if (r() < 0.12) pullback = 2 + Math.floor(r() * 4); }
+      volMul = 1.05;
+    } else if (regime === "impulse") { drift = trend * 0.25; volMul = 1.6; }
+    else if (regime === "range") volMul = 0.9;
+    else volMul = 0.65; // calm: после импульса рынок «переводит дух»
+
     const o = p;
-    const c = o + drift + pull + (r() - 0.5) * 2 * vol;
-    const h = Math.max(o, c) + r() * vol * 0.8;
-    const l = Math.min(o, c) - r() * vol * 0.8;
-    out.push([r5(o), r5(h), r5(l), r5(c)]);
-    p = c;
+    let h = p, l = p;
+    const spike = r() < 0.09 ? (r() < 0.5 ? -1 : 1) : 0; // вынос цены → длинная тень
+    const spikeAt = Math.floor(r() * (TICKS - 1));
+    for (let k = 0; k < TICKS; k++) {
+      // силы пересчитываются на каждом тике — без перескоков
+      let pull = (start - p) * 0.0004;                       // дальний «якорь» цены
+      if (regime === "range") {
+        const dist = (p - mid) / half;
+        pull += -dist * sigma * (Math.abs(dist) > 0.9 ? 0.3 : 0.12); // отскок от границ
+      } else if (regime === "calm") {
+        pull += -((p - mid) / half) * sigma * 0.1;
+      }
+      let step = drift * sigma + pull + sigma * volMul * gauss();
+      if (r() < 0.03) step *= 2.5;                        // редкий резкий тик
+      if (spike && k === spikeAt) step += spike * sigma * (3 + r() * 4);
+      if (spike && k === spikeAt + 1) step -= spike * sigma * (2.5 + r() * 3.5);
+      p += step;
+      if (p > h) h = p;
+      if (p < l) l = p;
+    }
+    out.push([r5(o), r5(h), r5(l), r5(p)]);
   }
   return out;
 }
@@ -410,3 +464,4 @@ export async function handleDuel(request, env, ctx, record, action, duelId) {
 
   return { status: 200, body: duelPublic(d, mid) };
 }
+export { series as marketSeries };
