@@ -14,6 +14,8 @@ compatibility_date = "2026-11-01"
 directory = "./public"
 
 [vars]
+# Где лежат картинки-карточки, которые бот присылает участникам
+CARDS_URL = "https://blue-moon-2662ava-trade-verify.prohavadim9.workers.dev/cards"
 # Адрес вашего сайта (без слэша в конце). Можно несколько через запятую.
 ALLOWED_ORIGIN = "https://vip-club-ava.vercel.app,https://vip-club-ava-*.vercel.app,https://blue-moon-2662ava-trade-verify.prohavadim9.workers.dev"
 
@@ -21,3 +23,7 @@ ALLOWED_ORIGIN = "https://vip-club-ava.vercel.app,https://vip-club-ava-*.vercel.
 [[kv_namespaces]]
 binding = "AVA_KV"
 id = "d89a8c0bd57d46f1aad2e3ec136f176f"
+
+# Итоги турнира AVA: каждое воскресенье в 18:00 UTC (00:00 по Бишкеку)
+[triggers]
+crons = ["0 18 * * SUN"]

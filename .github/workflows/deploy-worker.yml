@@ -6,7 +6,7 @@ name: Deploy server to Cloudflare
 on:
   push:
     branches: [main, feature/id-verification]
-    paths: ["server/**", ".github/workflows/deploy-worker.yml"]
+    paths: ["server/**", "cards/**", "index.html", ".github/workflows/deploy-worker.yml"]
   workflow_dispatch:
 
 jobs:
@@ -28,11 +28,11 @@ jobs:
 
       - name: Тесты сервера
         if: steps.check.outputs.skip != '1'
-        run: node server/test.mjs && node server/test-setup.mjs
+        run: node server/test.mjs && node server/test-setup.mjs && node server/test-club.mjs
 
       - name: Подготовить сайт
         if: steps.check.outputs.skip != '1'
-        run: mkdir -p server/public && cp index.html server/public/index.html
+        run: mkdir -p server/public/cards && cp index.html server/public/index.html && cp cards/*.png server/public/cards/
 
       - name: Загрузить в Cloudflare
         id: deploy
@@ -50,6 +50,8 @@ jobs:
           sleep 10
           U=https://blue-moon-2662ava-trade-verify.prohavadim9.workers.dev
           curl -fsS "$U/" | grep -q "Trading Academy" && echo "::notice::Сайт открывается: $U"
+          curl -fsS -o /dev/null -w "%{http_code} %{content_type}" "$U/cards/check-green.png" | tee /tmp/c.txt
+          echo "::notice::Карточка: $(cat /tmp/c.txt)"
           curl -fsS "$U/api/health" | tee /tmp/h.json
           echo "::notice::health $(cat /tmp/h.json)"
 

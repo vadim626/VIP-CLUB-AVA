@@ -696,6 +696,51 @@
         .check input:checked ~ span:last-child { color: #fff; }
         .check-count { padding: 8px 10px 6px; color: var(--text-3); font-size: 12.5px; text-align: right; }
 
+        /* AVA CLUB */
+        .club-tiles { display: grid; gap: 10px; }
+        .club-tile {
+            display: grid; grid-template-columns: 52px 1fr; grid-template-rows: auto auto; column-gap: 14px; row-gap: 2px;
+            align-items: center; text-align: left; padding: 14px; border-radius: 18px; cursor: pointer;
+            border: 1px solid var(--line); background: rgba(255,255,255,0.035); color: inherit; font: inherit;
+            transition: transform .2s var(--ease), border-color .2s;
+        }
+        .club-tile:active { transform: scale(0.98); }
+        .club-tile .club-ico { grid-row: 1 / 3; width: 52px; height: 52px; border-radius: 15px; display: grid; place-items: center; font-size: 25px; }
+        .club-tile b { font-size: 16px; font-weight: 680; }
+        .club-tile span:last-child { color: var(--text-3); font-size: 13px; line-height: 1.35; }
+        .q-block { padding: 14px; border-radius: 16px; background: #131722; border: 1px solid #252b3b; }
+        .q-block + .q-block { margin-top: 10px !important; }
+        .q-title { font-size: 15px; font-weight: 640; margin-bottom: 10px; }
+        .q-opts { display: grid; gap: 7px; }
+        .q-opt { min-height: 44px; padding: 10px 13px; border-radius: 11px; border: 1px solid #2a3145; background: #1a1f2c; color: #e8ecf5; font: inherit; font-size: 14.5px; text-align: left; cursor: pointer; }
+        .q-opt.on { border-color: var(--violet); background: rgba(160,32,255,0.18); color: #fff; }
+        .verdict { text-align: center; padding: 22px 16px; border-radius: 20px; border: 1px solid; }
+        .verdict .big { width: 84px; height: 84px; margin: 0 auto 12px; border-radius: 50%; display: grid; place-items: center; font-size: 38px; color: #fff; font-weight: 800; }
+        .verdict h3 { font-size: 22px !important; margin: 0 !important; padding: 0 !important; }
+        .verdict p { margin-top: 6px; color: var(--text-2); font-size: 14.5px; line-height: 1.5; }
+        .v-green { border-color: rgba(43,182,115,.5); background: rgba(43,182,115,.08); } .v-green .big { background: #2bb673; }
+        .v-yellow { border-color: rgba(245,184,61,.5); background: rgba(245,184,61,.08); } .v-yellow .big { background: #f5b83d; }
+        .v-red { border-color: rgba(242,73,92,.5); background: rgba(242,73,92,.08); } .v-red .big { background: #f2495c; }
+        .stats { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; }
+        .stat { padding: 10px; border-radius: 12px; background: #131722; border: 1px solid #252b3b; text-align: center; }
+        .stat small { display: block; color: #8b93a7; font-size: 11.5px; }
+        .stat b { display: block; margin-top: 2px; font-size: 18px; font-variant-numeric: tabular-nums; }
+        .seg { display: flex; gap: 6px; }
+        .seg button { flex: 1; min-height: 40px; border-radius: 10px; border: 1px solid #2a3145; background: #1e2433; color: #e8ecf5; font: inherit; font-size: 14px; font-weight: 600; cursor: pointer; }
+        .seg button.on { background: var(--violet); border-color: var(--violet); }
+        .trade-row { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+        .lb { list-style: none; border-radius: 14px; overflow: hidden; border: 1px solid #252b3b; }
+        .lb li { display: flex; align-items: center; gap: 10px; padding: 10px 12px; background: #131722; font-size: 14px; }
+        .lb li + li { border-top: 1px solid #1f2533; }
+        .lb li.me { background: rgba(160,32,255,.14); }
+        .lb .pl { width: 26px; height: 26px; border-radius: 8px; display: grid; place-items: center; background: #1e2433; font-weight: 700; font-size: 12.5px; }
+        .lb .nm { flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+        .lb .bl { font-weight: 700; font-variant-numeric: tabular-nums; }
+        .dots { display: flex; gap: 6px; justify-content: center; }
+        .dots i { width: 22px; height: 22px; border-radius: 50%; background: #1e2433; border: 1px solid #2a3145; display: grid; place-items: center; font-style: normal; font-size: 12px; font-weight: 800; }
+        .dots i.ok { background: #2bb673; border-color: #2bb673; } .dots i.no { background: #f2495c; border-color: #f2495c; }
+        .muted { color: var(--text-3); font-size: 13px; text-align: center; }
+
         /* Тест */
         .quiz { margin-top: 22px !important; padding: 16px; border-radius: var(--radius-lg); background: rgba(160, 32, 255, 0.07); border: 1px solid var(--line-strong); }
         .quiz-q { font-size: 16px; font-weight: 640; line-height: 1.4; }
@@ -908,6 +953,47 @@
              TRADING ACADEMY
              Уроки загружаются с сервера только после одобрения ID.
              ===================================================== -->
+        <!-- =====================================================
+             AVA CLUB — только для одобренных участников
+             ===================================================== -->
+        <section class="card academy hidden" id="clubSection">
+            <div id="clubHome">
+                <div class="academy-head">
+                    <div>
+                        <div class="eyebrow">Только для участников</div>
+                        <h2>AVA CLUB</h2>
+                    </div>
+                </div>
+                <p class="academy-sub">Тренируйся, соревнуйся и следи за своей формой. Результаты приходят и в Telegram.</p>
+                <div class="club-tiles">
+                    <button class="club-tile" type="button" data-open="check">
+                        <span class="club-ico" style="background:linear-gradient(145deg,#2bb673,#16784a)">🧠</span>
+                        <b>Можно ли мне сегодня торговать?</b>
+                        <span>30 секунд — и ты знаешь, в форме ли ты сегодня</span>
+                    </button>
+                    <button class="club-tile" type="button" data-open="tour">
+                        <span class="club-ico" style="background:linear-gradient(145deg,#f5b83d,#b7741b)">🏆</span>
+                        <b>Турнир недели</b>
+                        <span>$1 000 виртуальных, один график на всех, таблица лидеров</span>
+                    </button>
+                    <button class="club-tile" type="button" data-open="duel">
+                        <span class="club-ico" style="background:linear-gradient(145deg,#b45cff,#5b16c9)">⚔️</span>
+                        <b>Дуэль 1 на 1</b>
+                        <span>10 свечей. Вызови друга — кто угадает больше?</span>
+                    </button>
+                </div>
+            </div>
+
+            <div id="clubView" class="hidden">
+                <div class="lesson-top">
+                    <button class="back" id="clubBack" type="button">‹ AVA CLUB</button>
+                    <span class="lesson-count" id="clubCount"></span>
+                </div>
+                <h2 class="lesson-title" id="clubTitle"></h2>
+                <div class="lesson-body" id="clubBody"></div>
+            </div>
+        </section>
+
         <section class="card academy" id="academySection">
             <div id="academyList">
                 <div class="academy-head">
@@ -1047,6 +1133,7 @@
                 show($("stateApproved"));
                 stopPolling();
                 loadAcademy();
+                showClub();
             } else if (data.status === "rejected") {
                 show($("stateRejected"));
                 stopPolling();
@@ -1760,10 +1847,261 @@
             }
 
             s += "</svg>";
-            return '<div class="term"><div class="term-bar"><span class="term-asset"><i></i>EUR/USD</span><span class="term-tf">' + (ch.tf || "M1") + '</span><span style="margin-left:auto">Учебный график</span></div>' + s + "</div>";
+            return '<div class="term"><div class="term-bar"><span class="term-asset"><i></i>' + (ch.asset || "EUR/USD") + '</span><span class="term-tf">' + (ch.tf || "M1") + '</span><span style="margin-left:auto">' + (ch.label || "Учебный график") + '</span></div>' + s + "</div>";
         }
 
         renderLessonList();
+
+        /* =====================================================
+           AVA CLUB: проверка перед торговлей, турнир, дуэли
+           ===================================================== */
+        var clubSection = $("clubSection");
+        var clubBody = $("clubBody");
+        var clubTimer = null;
+        var clubOpen = null;
+
+        function authApi(path, method, body) {
+            var saved = loadSaved() || {};
+            var opt = { method: method || "GET", headers: { Authorization: "Bearer " + saved.token }, cache: "no-store" };
+            if (body) { opt.headers["Content-Type"] = "application/json"; opt.body = JSON.stringify(body); }
+            return api(path, opt);
+        }
+        function esc(t) { var d = document.createElement("div"); d.textContent = t; return d.innerHTML; }
+        function money(v) { return "$" + Number(v).toLocaleString("ru-RU", { minimumFractionDigits: 0, maximumFractionDigits: 2 }); }
+        function stopClubTimer() { clearTimeout(clubTimer); clubTimer = null; }
+
+        function showClub() {
+            show(clubSection);
+            var m = /[?&]duel=([0-9a-f]{12})/.exec(location.search);
+            if (m && !showClub.handled) {
+                showClub.handled = true;
+                openClub("duel", m[1]);
+                setTimeout(function () { clubSection.scrollIntoView({ behavior: "smooth", block: "start" }); }, 300);
+            }
+        }
+
+        function openClub(kind, arg) {
+            stopClubTimer();
+            clubBody.onclick = null;
+            clubOpen = kind;
+            hide($("clubHome"));
+            show($("clubView"));
+            $("clubCount").textContent = "";
+            clubBody.innerHTML = '<p class="muted">Загружаем…</p>';
+            if (kind === "check") { $("clubTitle").textContent = "🧠 Можно ли мне сегодня торговать?"; openCheck(); }
+            if (kind === "tour") { $("clubTitle").textContent = "🏆 Турнир недели"; loadTour(); }
+            if (kind === "duel") { $("clubTitle").textContent = "⚔️ Дуэль 1 на 1"; openDuel(arg); }
+        }
+
+        Array.prototype.forEach.call(document.querySelectorAll(".club-tile"), function (b) {
+            b.addEventListener("click", function () {
+                openClub(b.getAttribute("data-open"));
+                clubSection.scrollIntoView({ behavior: "smooth", block: "start" });
+            });
+        });
+        $("clubBack").addEventListener("click", function () {
+            stopClubTimer();
+            clubOpen = null;
+            hide($("clubView"));
+            show($("clubHome"));
+        });
+
+        /* ---------- 🧠 Проверка ---------- */
+        function openCheck() {
+            authApi("/api/club/check").then(function (r) {
+                if (!r.ok) { clubBody.innerHTML = '<p class="muted">Не удалось загрузить. Попробуйте позже.</p>'; return; }
+                var qs = r.body.questions, answers = qs.map(function () { return null; });
+                clubBody.innerHTML = '<p class="txt">Ответь честно — это займёт 30 секунд. Результат придёт и в Telegram.</p>' +
+                    qs.map(function (q, i) {
+                        return '<div class="q-block"><div class="q-title">' + (i + 1) + ". " + esc(q.q) + '</div><div class="q-opts">' +
+                            q.a.map(function (a, k) { return '<button class="q-opt" type="button" data-q="' + i + '" data-k="' + k + '">' + esc(a) + "</button>"; }).join("") +
+                            "</div></div>";
+                    }).join("") +
+                    '<button class="btn btn-primary" id="checkGo" type="button" disabled style="margin-top:14px">Узнать результат</button><div id="checkOut"></div>';
+                clubBody.onclick = function (e) {
+                    var b = e.target.closest(".q-opt");
+                    if (!b) return;
+                    var qi = Number(b.getAttribute("data-q"));
+                    answers[qi] = Number(b.getAttribute("data-k"));
+                    Array.prototype.forEach.call(clubBody.querySelectorAll('.q-opt[data-q="' + qi + '"]'), function (x) { x.classList.toggle("on", x === b); });
+                    $("checkGo").disabled = answers.some(function (a) { return a === null; });
+                };
+                $("checkGo").addEventListener("click", function () {
+                    $("checkGo").disabled = true;
+                    authApi("/api/club/check", "POST", { answers: answers }).then(function (r2) {
+                        if (!r2.ok) { showToast("Не получилось. Попробуйте ещё раз."); $("checkGo").disabled = false; return; }
+                        var v = r2.body;
+                        var T = {
+                            green: ["✓", "Можно торговать по плану", "Ты в форме. Соблюдай риск 1–2% и стоп после 3 убытков подряд."],
+                            yellow: ["!", "Осторожно", "Сегодня — только маленькие суммы и только сигналы, где совпадают 2–3 фактора."],
+                            red: ["II", "Сегодня лучше пауза", "Лучшая сделка сегодня — пропущенная. Потренируйся в турнире — там без риска."]
+                        }[v.level];
+                        $("checkOut").innerHTML = '<div class="verdict v-' + v.level + '" style="margin-top:16px"><div class="big">' + T[0] + "</div><h3>" + T[1] + "</h3><p>" + T[2] + "</p></div>" +
+                            (v.tips.length ? "<ul style=\"margin-top:14px\">" + v.tips.map(function (t) { return "<li>" + esc(t) + "</li>"; }).join("") + "</ul>" : "") +
+                            '<p class="muted" style="margin-top:12px">' + (v.sentToTelegram ? "📩 Карточка отправлена вам в Telegram" : "Карточку в Telegram бот присылает не чаще раза в час") + "</p>";
+                        $("checkOut").scrollIntoView({ behavior: "smooth", block: "center" });
+                        $("checkGo").disabled = false;
+                    });
+                });
+            });
+        }
+
+        /* ---------- 🏆 Турнир ---------- */
+        var tour = { amt: 50, exp: 1 };
+        function loadTour() {
+            authApi("/api/club/tour").then(function (r) {
+                if (clubOpen !== "tour") return;
+                if (!r.ok) { clubBody.innerHTML = '<p class="muted">Не удалось загрузить турнир. Попробуйте позже.</p>'; return; }
+                renderTour(r.body);
+            }).catch(function () { clubBody.innerHTML = '<p class="muted">Нет связи с сервером.</p>'; });
+        }
+        function fmtLeft(sec) {
+            var d = Math.floor(sec / 86400), h = Math.floor(sec % 86400 / 3600), m = Math.floor(sec % 3600 / 60);
+            return (d ? d + " д " : "") + (h ? h + " ч " : "") + m + " мин";
+        }
+        function renderTour(t) {
+            stopClubTimer();
+            if (t.starting) {
+                clubBody.innerHTML = '<p class="muted">Новая неделя турнира начинается — первые свечи появятся через минуту.</p>';
+                clubTimer = setTimeout(loadTour, 30000);
+                return;
+            }
+            var me = t.me;
+            $("clubCount").textContent = "до финала " + fmtLeft(t.weekEndsIn);
+            var levels = me.open.map(function (o) {
+                return { price: o.entry, label: (o.dir === "up" ? "▲ " : "▼ ") + "$" + o.amt, color: o.dir === "up" ? "green" : "red" };
+            });
+            var html = '<div class="stats"><div class="stat"><small>Баланс</small><b>' + money(me.bal) + '</b></div>' +
+                '<div class="stat"><small>Место</small><b>' + (me.place ? me.place + "/" + t.players : "—") + '</b></div>' +
+                '<div class="stat"><small>Сделки</small><b>' + me.wins + "–" + me.losses + "</b></div></div>";
+            html += drawChart({ candles: t.candles, asset: t.asset, tf: "M1", label: "⏱ " + t.nextCandleIn + " с", levels: levels });
+            html += '<div class="q-block"><div class="q-title">Сумма и время сделки</div>' +
+                '<div class="tp-ctl" style="margin-bottom:10px"><button type="button" class="js-t-minus" style="width:44px;height:40px">−</button><b class="js-t-amt" style="font-size:20px">$' + tour.amt + '</b><button type="button" class="js-t-plus" style="width:44px;height:40px">+</button></div>' +
+                '<div class="seg">' + t.expiries.map(function (e) { return '<button type="button" data-exp="' + e + '" class="' + (tour.exp === e ? "on" : "") + '">' + e + " мин</button>"; }).join("") + "</div>" +
+                '<p class="muted" style="margin:10px 0">Выплата при верном прогнозе: <b style="color:#2bb673">' + money(tour.amt * (1 + t.payout)) + "</b></p>" +
+                '<div class="trade-row"><button class="tp-up js-up" type="button">▲ Выше</button><button class="tp-down js-down" type="button">▼ Ниже</button></div></div>';
+            if (me.open.length) {
+                html += "<h3>Открытые сделки</h3><ul>" + me.open.map(function (o) {
+                    return "<li>" + (o.dir === "up" ? "▲ Выше" : "▼ Ниже") + " · " + money(o.amt) + " · от " + o.entry.toFixed(5) + " · " + o.exp + " мин</li>";
+                }).join("") + "</ul>";
+            }
+            if (me.last.length) {
+                html += "<h3>Последние результаты</h3><ul>" + me.last.slice(0, 5).map(function (o) {
+                    var col = o.res === "win" ? "#2bb673" : o.res === "loss" ? "#f2495c" : "#8b93a7";
+                    var txt = o.res === "win" ? "+" + money(o.amt * t.payout) : o.res === "loss" ? "−" + money(o.amt) : "возврат";
+                    return "<li>" + (o.dir === "up" ? "▲" : "▼") + " " + money(o.amt) + ' → <b style="color:' + col + '">' + txt + "</b></li>";
+                }).join("") + "</ul>";
+            }
+            html += "<h3>Таблица лидеров</h3>" + (t.top.length ? '<ul class="lb">' + t.top.map(function (x) {
+                return '<li class="' + (x.me ? "me" : "") + '"><span class="pl">' + (x.place <= 3 ? ["🥇", "🥈", "🥉"][x.place - 1] : x.place) + '</span><span class="nm">' + esc(x.name) + (x.me ? " (вы)" : "") + '</span><span class="bl">' + money(x.bal) + "</span></li>";
+            }).join("") + "</ul>" : '<p class="muted">Пока никто не торговал — станьте первым!</p>');
+            html += '<div class="tip">Это тренировочная симуляция: деньги виртуальные, график общий для всех участников. Итоги — в воскресенье в 00:00, карточка с местом придёт в Telegram.</div>';
+            clubBody.innerHTML = html;
+
+            var amtEl = clubBody.querySelector(".js-t-amt");
+            var step = function (d) {
+                tour.amt = Math.max(10, Math.min(Math.floor(me.bal) || 10, tour.amt + d));
+                amtEl.textContent = "$" + tour.amt;
+                clubBody.querySelector(".muted b").textContent = money(tour.amt * (1 + t.payout));
+            };
+            clubBody.querySelector(".js-t-minus").addEventListener("click", function () { step(-10); });
+            clubBody.querySelector(".js-t-plus").addEventListener("click", function () { step(10); });
+            Array.prototype.forEach.call(clubBody.querySelectorAll(".seg button"), function (b) {
+                b.addEventListener("click", function () {
+                    tour.exp = Number(b.getAttribute("data-exp"));
+                    Array.prototype.forEach.call(clubBody.querySelectorAll(".seg button"), function (x) { x.classList.toggle("on", x === b); });
+                });
+            });
+            var trade = function (dir) {
+                authApi("/api/club/tour/trade", "POST", { dir: dir, amt: tour.amt, exp: tour.exp }).then(function (r) {
+                    if (r.ok) { showToast((dir === "up" ? "▲ Выше" : "▼ Ниже") + " · " + money(tour.amt) + " · " + tour.exp + " мин"); renderTour(r.body); return; }
+                    var E = { no_balance: "Недостаточно средств на балансе", too_many_open: "Максимум 3 открытые сделки одновременно", week_ending: "Неделя турнира заканчивается — новые сделки уже не успеют закрыться" };
+                    showToast(E[r.body.error] || "Сделка не прошла. Попробуйте ещё раз.");
+                });
+            };
+            clubBody.querySelector(".js-up").addEventListener("click", function () { trade("up"); });
+            clubBody.querySelector(".js-down").addEventListener("click", function () { trade("down"); });
+            clubTimer = setTimeout(loadTour, (Math.max(1, t.nextCandleIn) + 1) * 1000);
+        }
+
+        /* ---------- ⚔️ Дуэль ---------- */
+        var DUEL_KEY = "ava_duel";
+        function openDuel(id) {
+            id = id || (function () { try { return localStorage.getItem(DUEL_KEY); } catch (e) { return null; } })();
+            if (!id) { renderDuelStart(); return; }
+            authApi("/api/club/duel/" + id).then(function (r) {
+                if (clubOpen !== "duel") return;
+                if (!r.ok) { try { localStorage.removeItem(DUEL_KEY); } catch (e) {} renderDuelStart("Дуэль не найдена или устарела."); return; }
+                renderDuel(r.body);
+            });
+        }
+        function renderDuelStart(note) {
+            stopClubTimer();
+            clubBody.innerHTML = (note ? '<p class="muted">' + esc(note) + "</p>" : "") +
+                '<p class="txt">Вы и соперник получаете <b>один и тот же график</b>. 10 раз угадываете, куда закроется следующая свеча. У кого больше верных ответов — тот победил. Итог придёт обоим в Telegram.</p>' +
+                '<button class="btn btn-primary" id="duelNew" type="button" style="margin-top:14px">⚔️ Создать дуэль</button>';
+            $("duelNew").addEventListener("click", function () {
+                authApi("/api/club/duel", "POST").then(function (r) {
+                    if (!r.ok) { showToast("Не удалось создать дуэль"); return; }
+                    try { localStorage.setItem(DUEL_KEY, r.body.id); } catch (e) {}
+                    renderDuel(r.body);
+                });
+            });
+        }
+        function renderDuel(d) {
+            stopClubTimer();
+            try { localStorage.setItem(DUEL_KEY, d.id); } catch (e) {}
+            var link = location.origin + location.pathname + "?duel=" + d.id;
+            var html = "";
+            if (d.joinable) {
+                html += '<p class="txt">Вас вызвали на дуэль! 10 свечей — кто угадает больше.</p><button class="btn btn-primary" id="duelJoin" type="button">Принять вызов</button>';
+                clubBody.innerHTML = html;
+                $("duelJoin").addEventListener("click", function () {
+                    authApi("/api/club/duel/" + d.id + "/join", "POST").then(function (r) { if (r.ok) renderDuel(r.body); else showToast("Дуэль уже занята"); });
+                });
+                return;
+            }
+            if (!d.me) { renderDuelStart("Эта дуэль уже идёт между другими участниками."); return; }
+            var opp = d.opponent;
+            $("clubCount").textContent = (d.me.guesses.length) + " / " + d.rounds;
+            html += '<div class="stats"><div class="stat"><small>Вы</small><b>' + d.me.score + '</b></div><div class="stat"><small>Раунд</small><b>' + Math.min(d.me.guesses.length + 1, d.rounds) + "/" + d.rounds + '</b></div><div class="stat"><small>' + (opp ? esc(opp.name) : "Соперник") + "</small><b>" + (opp && opp.score !== null ? opp.score : "?") + "</b></div></div>";
+            html += '<div class="dots">' + Array.apply(null, Array(d.rounds)).map(function (_, i) {
+                var g = d.me.guesses[i];
+                return "<i class=\"" + (g ? (g.ok ? "ok" : "no") : "") + "\">" + (g ? (g.ok ? "✓" : "✗") : "") + "</i>";
+            }).join("") + "</div>";
+            html += drawChart({ candles: d.candles, asset: "AVA/USD", tf: "M1", label: "Дуэль" });
+            if (!d.me.done) {
+                html += '<div class="trade-row"><button class="tp-up js-du" type="button">▲ Выше</button><button class="tp-down js-dd" type="button">▼ Ниже</button></div>';
+            }
+            if (!opp) {
+                html += '<div class="q-block"><div class="q-title">Пригласите соперника</div><p class="muted" style="text-align:left;margin-bottom:10px">Отправьте ссылку участнику клуба. Можно играть, не дожидаясь его.</p>' +
+                    '<a class="btn btn-telegram" target="_blank" rel="noopener" href="https://t.me/share/url?url=' + encodeURIComponent(link) + "&text=" + encodeURIComponent("⚔️ Вызываю тебя на дуэль в AVA TRADE! 10 свечей — кто угадает больше?") + '">Отправить вызов в Telegram</a>' +
+                    '<button class="btn btn-secondary" id="duelCopy" type="button">Скопировать ссылку</button></div>';
+            }
+            if (d.status === "done") {
+                var mine = d.me.score, theirs = opp.score;
+                var res = mine === theirs ? ["v-yellow", "=", "Ничья"] : mine > theirs ? ["v-green", "✓", "Победа!"] : ["v-red", "✗", "Поражение"];
+                html += '<div class="verdict ' + res[0] + '"><div class="big">' + res[1] + "</div><h3>" + res[2] + " " + mine + ":" + theirs + '</h3><p>Карточка с итогом отправлена в Telegram.</p></div>' +
+                    '<button class="btn btn-primary" id="duelAgain" type="button">⚔️ Новая дуэль</button>';
+            } else if (d.me.done) {
+                html += '<p class="muted">Вы сыграли все 10 раундов. Ждём соперника — итог придёт в Telegram.</p>';
+            }
+            clubBody.innerHTML = html;
+            var guess = function (dir) {
+                authApi("/api/club/duel/" + d.id + "/guess", "POST", { dir: dir }).then(function (r) { if (r.ok) renderDuel(r.body); });
+            };
+            if ($("duelCopy")) $("duelCopy").addEventListener("click", function () {
+                (navigator.clipboard ? navigator.clipboard.writeText(link) : Promise.reject()).then(function () { showToast("Ссылка скопирована"); }, function () { prompt("Скопируйте ссылку:", link); });
+            });
+            if (clubBody.querySelector(".js-du")) {
+                clubBody.querySelector(".js-du").addEventListener("click", function () { guess("up"); });
+                clubBody.querySelector(".js-dd").addEventListener("click", function () { guess("down"); });
+            }
+            if ($("duelAgain")) $("duelAgain").addEventListener("click", function () { try { localStorage.removeItem(DUEL_KEY); } catch (e) {} renderDuelStart(); });
+            if (d.status !== "done" && (d.me.done || !opp)) {
+                clubTimer = setTimeout(function () { if (clubOpen === "duel") openDuel(d.id); }, 6000);
+            }
+        }
 
         /* ---------- Возврат на сайт: показываем сохранённый статус ---------- */
         var saved = loadSaved();

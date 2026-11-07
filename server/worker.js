@@ -33,12 +33,25 @@ const RATE_LIMIT_MAX = 5;               // не больше 5 заявок…
 const RATE_LIMIT_WINDOW = 60 * 60;      // …в час с одного IP
 const ID_PATTERN = /^\d{5,12}$/;        // Pocket Option ID — только цифры
 import { academyLessons } from "./academy.js";
+import { checkQuestions, handleCheckin, handleTour, handleDuel, finishWeek } from "./club.js";
 
 const INVITE_TTL = 60 * 60 * 24 * 7;    // одноразовая ссылка действует 7 дней
 const RECHECK_COOLDOWN = 10 * 60;       // «Я пополнил» — не чаще раза в 10 минут
 const DEFAULT_MIN_DEPOSIT = 10;         // минимальное пополнение, $ (можно задать MIN_DEPOSIT)
 
+// Что модулю клуба нужно от сервера
+const CLUB_CTX = {
+  telegram: (env, method, payload) => telegram(env, method, payload),
+  cardsUrl: (env) => (env.CARDS_URL || "https://blue-moon-2662ava-trade-verify.prohavadim9.workers.dev/cards").replace(/\/$/, ""),
+};
+
 export default {
+  // Воскресенье 18:00 UTC — итоги турнира недели
+  async scheduled(event, rawEnv, execCtx) {
+    const env = await withConfig(rawEnv);
+    execCtx.waitUntil(finishWeek(env, CLUB_CTX));
+  },
+
   async fetch(request, rawEnv) {
     const url = new URL(request.url);
     const env = await withConfig(rawEnv);
@@ -60,6 +73,9 @@ export default {
       }
       if (url.pathname === "/api/recheck" && request.method === "POST") {
         return await handleRecheck(request, env, cors);
+      }
+      if (url.pathname.startsWith("/api/club/")) {
+        return await handleClub(request, env, cors, url);
       }
       if (url.pathname === "/api/academy" && request.method === "GET") {
         return await handleAcademy(request, env, cors);
@@ -167,6 +183,30 @@ async function findByToken(request, env) {
   const record = reqId ? await getRequest(env, reqId) : null;
   if (!record) return { error: "not_found", code: 404 };
   return { record };
+}
+
+// Клуб (проверка перед торговлей, турнир, дуэли) — только одобренным участникам.
+async function handleClub(request, env, cors, url) {
+  if (request.method === "POST" && !isAllowedOrigin(request, env)) {
+    return json({ error: "forbidden_origin" }, 403, cors);
+  }
+  const found = await findByToken(request, env);
+  if (found.error) return json({ error: found.error }, found.code, cors);
+  const record = found.record;
+  if (record.status !== "approved") return json({ error: "not_approved" }, 403, cors);
+
+  const parts = url.pathname.split("/").slice(3); // /api/club/<что>/...
+  const m = request.method;
+  let res;
+  if (parts[0] === "check" && m === "GET") res = { status: 200, body: { questions: checkQuestions() } };
+  else if (parts[0] === "check" && m === "POST") res = await handleCheckin(request, env, CLUB_CTX, record);
+  else if (parts[0] === "tour" && m === "GET") res = await handleTour(request, env, CLUB_CTX, record, "view");
+  else if (parts[0] === "tour" && parts[1] === "trade" && m === "POST") res = await handleTour(request, env, CLUB_CTX, record, "trade");
+  else if (parts[0] === "duel" && !parts[1] && m === "POST") res = await handleDuel(request, env, CLUB_CTX, record, "create");
+  else if (parts[0] === "duel" && parts[1] && !parts[2] && m === "GET") res = await handleDuel(request, env, CLUB_CTX, record, "view", parts[1]);
+  else if (parts[0] === "duel" && parts[1] && ["join", "guess"].includes(parts[2]) && m === "POST") res = await handleDuel(request, env, CLUB_CTX, record, parts[2], parts[1]);
+  else res = { status: 404, body: { error: "not_found" } };
+  return json(res.body, res.status, cors);
 }
 
 // Уроки академии выдаются ТОЛЬКО одобренным участникам.
