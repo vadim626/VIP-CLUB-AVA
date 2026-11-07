@@ -50,9 +50,9 @@ jobs:
           sleep 10
           U=https://blue-moon-2662ava-trade-verify.prohavadim9.workers.dev
           curl -fsS "$U/" | grep -q "Trading Academy" && echo "::notice::Сайт открывается: $U"
-          curl -fsS -o /dev/null -w "%{http_code} %{content_type}" "$U/cards/check-green.png" | tee /tmp/c.txt
+          curl -fsS -o /dev/null -w "%{http_code} %{content_type}" "$U/cards/check-green.png" > /tmp/c.txt
           echo "::notice::Карточка: $(cat /tmp/c.txt)"
-          curl -fsS "$U/api/health" | tee /tmp/h.json
+          curl -fsS "$U/api/health" > /tmp/h.json
           echo "::notice::health $(cat /tmp/h.json)"
 
       - name: Показать причину ошибки
